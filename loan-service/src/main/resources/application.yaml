@@ -1,0 +1,52 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: loan-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/banking_db?useSSL=false&serverTimezone=UTC
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update   # create/update tables automatically
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  jackson:
+    default-property-inclusion: non_null
+
+# 🔗 Eureka (Service Registry)
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka
+#  instance:
+#    prefer-ip-address: true
+
+# 🔥 Feign (future use)
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+
+# 🔍 Logging (optional but useful)
+#logging:
+#  level:
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# 🔐 Actuator (health check)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
