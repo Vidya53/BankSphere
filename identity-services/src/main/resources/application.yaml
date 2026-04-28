@@ -1,0 +1,16 @@
+
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/identity_db
+    username: root
+    password: Vidya@123
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+
+
