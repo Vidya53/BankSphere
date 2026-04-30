@@ -1,6 +1,7 @@
 package com.cts.loanservice.dto.response;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
@@ -9,6 +10,17 @@ import java.util.List;
 @AllArgsConstructor
 public class EmiScheduleResponse {
 
-    private Double emi;
-    private List<Double> schedule;
+    private Double emiAmount;
+    private Integer totalMonths;
+    private List<EmiDetail> schedule;
+
+    @Data
+    @Builder
+    public static class EmiDetail {
+        private int month;
+        private Double emi;
+        private Double principal;
+        private Double interest;
+        private Double balance;
+    }
 }

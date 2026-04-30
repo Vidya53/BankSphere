@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
 @Data
-public class EmiPaymentRequest {
+public class PrepaymentRequest {
 
     @NotBlank
     private String accountId;
@@ -14,4 +14,7 @@ public class EmiPaymentRequest {
     @NotNull
     @Positive
     private Double amount;
+
+    private boolean fullForeclosure;
 }
+

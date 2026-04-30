@@ -6,12 +6,20 @@ import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
 @Data
-public class EmiPaymentRequest {
+public class EligibilityCheckRequest {
 
     @NotBlank
-    private String accountId;
+    private String customerId;
 
     @NotNull
     @Positive
-    private Double amount;
+    private Double monthlyIncome;
+
+    @NotNull
+    @Positive
+    private Double requestedAmount;
+
+    @NotNull
+    private Integer requestedTenureMonths;
 }
+

@@ -10,4 +10,5 @@ public class LoanSummaryResponse {
     private long totalLoans;
     private long activeLoans;
     private long closedLoans;
+    private Double totalOutstanding;
 }
