@@ -8,8 +8,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,16 +21,15 @@ public class AccountController {
     private final AccountService accountService;
 
     @GetMapping("/me")
-    @PreAuthorize("hasRole('CUSTOMER')")
-    @Operation(summary = "View my accounts", description = "Customer views all their bank accounts")
+    @Operation(summary = "View my accounts")
     public ResponseEntity<ApiResponse<List<AccountResponse>>> getMyAccounts(
-            @AuthenticationPrincipal UserContext userContext) {
+            @RequestHeader(value = "X-User-Id", defaultValue = "CUST001") String userId) {
+        UserContext userContext = new UserContext(userId, userId, "CUSTOMER", null, null, null, null);
         List<AccountResponse> accounts = accountService.getMyAccounts(userContext);
         return ResponseEntity.ok(ApiResponse.success("Accounts retrieved successfully", accounts));
     }
 
     @GetMapping("/{accountNo}")
-    @PreAuthorize("hasRole('CUSTOMER')")
     @Operation(summary = "View account details by account number")
     public ResponseEntity<ApiResponse<AccountResponse>> getAccountByNo(
             @PathVariable String accountNo) {
@@ -40,4 +37,3 @@ public class AccountController {
         return ResponseEntity.ok(ApiResponse.success("Account retrieved successfully", response));
     }
 }
-

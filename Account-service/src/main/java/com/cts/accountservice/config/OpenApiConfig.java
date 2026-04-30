@@ -3,8 +3,6 @@ package com.cts.accountservice.config;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
-import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,14 +15,14 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("BankSphere - Account Service API")
                         .version("1.0")
-                        .description("Account Service for BankSphere Core Banking Application. Manages account applications, account lifecycle, and provides internal APIs for transaction/loan services.")
-                        .contact(new Contact().name("BankSphere Team").email("support@banksphere.com")))
-                .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
-                .schemaRequirement("Bearer Authentication",
-                        new SecurityScheme()
-                                .type(SecurityScheme.Type.HTTP)
-                                .bearerFormat("JWT")
-                                .scheme("bearer"));
+                        .description("Account Service for BankSphere Core Banking Application.\n\n" +
+                                "**Testing Headers (pass via Swagger or Postman):**\n" +
+                                "- `X-User-Id` — User/Customer ID (default: CUST001)\n" +
+                                "- `X-Branch-Code` — Branch code (default: BR001)\n" +
+                                "- `X-Customer-Name` — Name (default: Test User)\n" +
+                                "- `X-Email` — Email\n" +
+                                "- `X-Phone` — Phone\n" +
+                                "- `X-Role` — Role: CUSTOMER/CSR/BRANCH_MANAGER (default: CUSTOMER)")
+                        .contact(new Contact().name("BankSphere Team").email("support@banksphere.com")));
     }
 }
-
