@@ -1,0 +1,763 @@
+2026-04-29 00:45:36.877 [main] INFO  [] c.c.t.TransactionServiceApplication - Starting TransactionServiceApplication using Java 21 with PID 27076 (C:\Users\2485095\OneDrive - Cognizant\Desktop\Bank App\BankSphere\Transaction-service\target\classes started by 2485095 in C:\Users\2485095\OneDrive - Cognizant\Desktop\Bank App\BankSphere)
+2026-04-29 00:45:36.880 [main] DEBUG [] c.c.t.TransactionServiceApplication - Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-04-29 00:45:36.880 [main] INFO  [] c.c.t.TransactionServiceApplication - The following 1 profile is active: "dev"
+2026-04-29 00:45:37.835 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-29 00:45:37.953 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 100 ms. Found 1 JPA repository interface.
+2026-04-29 00:45:38.650 [main] INFO  [] o.s.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8082 (http)
+2026-04-29 00:45:38.668 [main] INFO  [] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-04-29 00:45:38.668 [main] INFO  [] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-04-29 00:45:38.763 [main] INFO  [] o.s.b.w.c.s.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 1827 ms
+2026-04-29 00:45:38.982 [main] INFO  [] org.hibernate.orm.jpa - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-29 00:45:39.074 [main] INFO  [] org.hibernate.orm.core - HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-04-29 00:45:39.718 [main] INFO  [] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-29 00:45:39.765 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Starting...
+2026-04-29 00:45:41.396 [main] WARN  [] org.hibernate.orm.jdbc.error - HHH000247: ErrorCode: 1049, SQLState: 42000
+2026-04-29 00:45:41.397 [main] WARN  [] org.hibernate.orm.jdbc.error - Unknown database 'banksphere_transactions_dev'
+2026-04-29 00:45:41.421 [main] WARN  [] org.hibernate.orm.jdbc - HHH100046: Could not obtain connection to query JDBC database metadata
+org.hibernate.exception.SQLGrammarException: Unable to obtain isolated JDBC connection [Unknown database 'banksphere_transactions_dev'] [n/a]
+	at org.hibernate.exception.internal.SQLStateConversionDelegate.convert(SQLStateConversionDelegate.java:63)
+	at org.hibernate.exception.internal.StandardSQLExceptionConverter.convert(StandardSQLExceptionConverter.java:34)
+	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:115)
+	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:101)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcIsolationDelegate.delegateWork(JdbcIsolationDelegate.java:51)
+	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.getJdbcEnvironmentUsingJdbcMetadata(JdbcEnvironmentInitiator.java:366)
+	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.getJdbcEnvironment(JdbcEnvironmentInitiator.java:143)
+	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.initiateService(JdbcEnvironmentInitiator.java:120)
+	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator.initiateService(JdbcEnvironmentInitiator.java:80)
+	at org.hibernate.boot.registry.internal.StandardServiceRegistryImpl.initiateService(StandardServiceRegistryImpl.java:133)
+	at org.hibernate.service.internal.AbstractServiceRegistryImpl.createService(AbstractServiceRegistryImpl.java:260)
+	at org.hibernate.service.internal.AbstractServiceRegistryImpl.initializeService(AbstractServiceRegistryImpl.java:235)
+	at org.hibernate.service.internal.AbstractServiceRegistryImpl.getService(AbstractServiceRegistryImpl.java:212)
+	at org.hibernate.boot.model.relational.Database.<init>(Database.java:44)
+	at org.hibernate.boot.internal.InFlightMetadataCollectorImpl.getDatabase(InFlightMetadataCollectorImpl.java:251)
+	at org.hibernate.boot.internal.InFlightMetadataCollectorImpl.<init>(InFlightMetadataCollectorImpl.java:203)
+	at org.hibernate.boot.model.process.spi.MetadataBuildingProcess.complete(MetadataBuildingProcess.java:172)
+	at org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl.metadata(EntityManagerFactoryBuilderImpl.java:1392)
+	at org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl.populateSessionFactoryBuilder(EntityManagerFactoryBuilderImpl.java:1472)
+	at org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl.build(EntityManagerFactoryBuilderImpl.java:1454)
+	at org.springframework.orm.jpa.vendor.SpringHibernateJpaPersistenceProvider.createContainerEntityManagerFactory(SpringHibernateJpaPersistenceProvider.java:93)
+	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.createNativeEntityManagerFactory(LocalContainerEntityManagerFactoryBean.java:443)
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:436)
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.afterPropertiesSet(AbstractEntityManagerFactoryBean.java:411)
+	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.afterPropertiesSet(LocalContainerEntityManagerFactoryBean.java:419)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1864)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1813)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:603)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:525)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:333)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:371)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:331)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:201)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:977)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:621)
+	at org.springframework.boot.web.server.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:143)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:756)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:445)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:321)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1365)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1354)
+	at com.cts.transactionservice.TransactionServiceApplication.main(TransactionServiceApplication.java:10)
+Caused by: java.sql.SQLSyntaxErrorException: Unknown database 'banksphere_transactions_dev'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:112)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:114)
+	at com.mysql.cj.jdbc.ConnectionImpl.createNewIO(ConnectionImpl.java:840)
+	at com.mysql.cj.jdbc.ConnectionImpl.<init>(ConnectionImpl.java:416)
+	at com.mysql.cj.jdbc.ConnectionImpl.getInstance(ConnectionImpl.java:237)
+	at com.mysql.cj.jdbc.NonRegisteringDriver.connect(NonRegisteringDriver.java:180)
+	at com.zaxxer.hikari.util.DriverDataSource.getConnection(DriverDataSource.java:144)
+	at com.zaxxer.hikari.pool.PoolBase.newConnection(PoolBase.java:373)
+	at com.zaxxer.hikari.pool.PoolBase.newPoolEntry(PoolBase.java:210)
+	at com.zaxxer.hikari.pool.HikariPool.createPoolEntry(HikariPool.java:488)
+	at com.zaxxer.hikari.pool.HikariPool.checkFailFast(HikariPool.java:576)
+	at com.zaxxer.hikari.pool.HikariPool.<init>(HikariPool.java:97)
+	at com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:111)
+	at org.hibernate.engine.jdbc.connections.internal.DataSourceConnectionProvider.getConnection(DataSourceConnectionProvider.java:137)
+	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess.obtainConnection(JdbcEnvironmentInitiator.java:508)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcIsolationDelegate.delegateWork(JdbcIsolationDelegate.java:48)
+	... 37 common frames omitted
+2026-04-29 00:45:41.461 [main] WARN  [] org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-04-29 00:45:41.483 [main] INFO  [] o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [undefined/unknown]
+	Database driver: undefined/unknown
+	Database dialect: MySQLDialect
+	Database version: 8.0
+	Default catalog/schema: unknown/unknown
+	Autocommit mode: undefined/unknown
+	Isolation level: NONE [default NONE]
+	JDBC fetch size: undefined/unknown
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-29 00:45:43.068 [main] INFO  [] org.hibernate.orm.core - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-29 00:45:43.075 [main] INFO  [] org.hibernate.orm.jdbc.batch - HHH100501: Automatic JDBC statement batching enabled (maximum batch size 50)
+2026-04-29 00:45:43.126 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Starting...
+2026-04-29 00:45:44.136 [main] WARN  [] org.hibernate.orm.jdbc.error - HHH000247: ErrorCode: 1049, SQLState: 42000
+2026-04-29 00:45:44.136 [main] WARN  [] org.hibernate.orm.jdbc.error - Unknown database 'banksphere_transactions_dev'
+2026-04-29 00:45:44.141 [main] ERROR [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Failed to initialize JPA EntityManagerFactory: Unable to build Hibernate SessionFactory  [persistence unit: default] ; nested exception is org.hibernate.exception.SQLGrammarException: Unable to open JDBC Connection for DDL execution [Unknown database 'banksphere_transactions_dev'] [n/a]
+2026-04-29 00:45:44.142 [main] WARN  [] o.s.b.w.s.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/hibernate/autoconfigure/HibernateJpaConfiguration.class]: Unable to build Hibernate SessionFactory  [persistence unit: default] ; nested exception is org.hibernate.exception.SQLGrammarException: Unable to open JDBC Connection for DDL execution [Unknown database 'banksphere_transactions_dev'] [n/a]
+2026-04-29 00:45:44.146 [main] INFO  [] o.a.catalina.core.StandardService - Stopping service [Tomcat]
+2026-04-29 00:45:44.159 [main] INFO  [] o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-04-29 00:45:44.180 [main] ERROR [] o.s.boot.SpringApplication - Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/hibernate/autoconfigure/HibernateJpaConfiguration.class]: Unable to build Hibernate SessionFactory  [persistence unit: default] ; nested exception is org.hibernate.exception.SQLGrammarException: Unable to open JDBC Connection for DDL execution [Unknown database 'banksphere_transactions_dev'] [n/a]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1817)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:603)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:525)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:333)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:371)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:331)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:201)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:977)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:621)
+	at org.springframework.boot.web.server.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:143)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:756)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:445)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:321)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1365)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1354)
+	at com.cts.transactionservice.TransactionServiceApplication.main(TransactionServiceApplication.java:10)
+Caused by: jakarta.persistence.PersistenceException: Unable to build Hibernate SessionFactory  [persistence unit: default] ; nested exception is org.hibernate.exception.SQLGrammarException: Unable to open JDBC Connection for DDL execution [Unknown database 'banksphere_transactions_dev'] [n/a]
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:448)
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.afterPropertiesSet(AbstractEntityManagerFactoryBean.java:411)
+	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.afterPropertiesSet(LocalContainerEntityManagerFactoryBean.java:419)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1864)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1813)
+	... 15 common frames omitted
+Caused by: org.hibernate.exception.SQLGrammarException: Unable to open JDBC Connection for DDL execution [Unknown database 'banksphere_transactions_dev'] [n/a]
+	at org.hibernate.exception.internal.SQLExceptionTypeDelegate.convert(SQLExceptionTypeDelegate.java:64)
+	at org.hibernate.exception.internal.StandardSQLExceptionConverter.convert(StandardSQLExceptionConverter.java:34)
+	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:115)
+	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:101)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl.getIsolatedConnection(DdlTransactionIsolatorNonJtaImpl.java:71)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl.getIsolatedConnection(DdlTransactionIsolatorNonJtaImpl.java:37)
+	at org.hibernate.tool.schema.internal.exec.ImprovedExtractionContextImpl.getJdbcConnection(ImprovedExtractionContextImpl.java:61)
+	at org.hibernate.tool.schema.internal.exec.ImprovedExtractionContextImpl.getJdbcDatabaseMetaData(ImprovedExtractionContextImpl.java:68)
+	at org.hibernate.tool.schema.extract.internal.InformationExtractorJdbcDatabaseMetaDataImpl.getJdbcDatabaseMetaData(InformationExtractorJdbcDatabaseMetaDataImpl.java:38)
+	at org.hibernate.tool.schema.extract.internal.InformationExtractorJdbcDatabaseMetaDataImpl.processTableResultSet(InformationExtractorJdbcDatabaseMetaDataImpl.java:76)
+	at org.hibernate.tool.schema.extract.internal.AbstractInformationExtractorImpl.getTables(AbstractInformationExtractorImpl.java:496)
+	at org.hibernate.tool.schema.extract.internal.DatabaseInformationImpl.getTablesInformation(DatabaseInformationImpl.java:124)
+	at org.hibernate.tool.schema.internal.GroupedSchemaMigratorImpl.performTablesMigration(GroupedSchemaMigratorImpl.java:72)
+	at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.performMigration(AbstractSchemaMigrator.java:220)
+	at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.doMigration(AbstractSchemaMigrator.java:96)
+	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.performDatabaseAction(SchemaManagementToolCoordinator.java:269)
+	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.lambda$process$1(SchemaManagementToolCoordinator.java:101)
+	at java.base/java.util.HashMap.forEach(HashMap.java:1429)
+	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.process(SchemaManagementToolCoordinator.java:100)
+	at org.hibernate.boot.internal.SessionFactoryObserverForSchemaExport.sessionFactoryCreated(SessionFactoryObserverForSchemaExport.java:35)
+	at org.hibernate.internal.SessionFactoryObserverChain.sessionFactoryCreated(SessionFactoryObserverChain.java:33)
+	at org.hibernate.internal.SessionFactoryImpl.<init>(SessionFactoryImpl.java:323)
+	at org.hibernate.internal.SessionFactoryRegistry.instantiateSessionFactory(SessionFactoryRegistry.java:64)
+	at org.hibernate.boot.internal.SessionFactoryBuilderImpl.build(SessionFactoryBuilderImpl.java:437)
+	at org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl.build(EntityManagerFactoryBuilderImpl.java:1456)
+	at org.springframework.orm.jpa.vendor.SpringHibernateJpaPersistenceProvider.createContainerEntityManagerFactory(SpringHibernateJpaPersistenceProvider.java:93)
+	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.createNativeEntityManagerFactory(LocalContainerEntityManagerFactoryBean.java:443)
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:436)
+	... 19 common frames omitted
+Caused by: java.sql.SQLSyntaxErrorException: Unknown database 'banksphere_transactions_dev'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:112)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:114)
+	at com.mysql.cj.jdbc.ConnectionImpl.createNewIO(ConnectionImpl.java:840)
+	at com.mysql.cj.jdbc.ConnectionImpl.<init>(ConnectionImpl.java:416)
+	at com.mysql.cj.jdbc.ConnectionImpl.getInstance(ConnectionImpl.java:237)
+	at com.mysql.cj.jdbc.NonRegisteringDriver.connect(NonRegisteringDriver.java:180)
+	at com.zaxxer.hikari.util.DriverDataSource.getConnection(DriverDataSource.java:144)
+	at com.zaxxer.hikari.pool.PoolBase.newConnection(PoolBase.java:373)
+	at com.zaxxer.hikari.pool.PoolBase.newPoolEntry(PoolBase.java:210)
+	at com.zaxxer.hikari.pool.HikariPool.createPoolEntry(HikariPool.java:488)
+	at com.zaxxer.hikari.pool.HikariPool.checkFailFast(HikariPool.java:576)
+	at com.zaxxer.hikari.pool.HikariPool.<init>(HikariPool.java:97)
+	at com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:111)
+	at org.hibernate.engine.jdbc.connections.internal.DataSourceConnectionProvider.getConnection(DataSourceConnectionProvider.java:137)
+	at org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess.obtainConnection(JdbcEnvironmentInitiator.java:508)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl.getIsolatedConnection(DdlTransactionIsolatorNonJtaImpl.java:44)
+	... 42 common frames omitted
+2026-04-29 00:50:55.463 [main] INFO  [] c.c.t.TransactionServiceApplication - Starting TransactionServiceApplication using Java 21 with PID 10520 (C:\Users\2485095\OneDrive - Cognizant\Desktop\Bank App\BankSphere\Transaction-service\target\classes started by 2485095 in C:\Users\2485095\OneDrive - Cognizant\Desktop\Bank App\BankSphere)
+2026-04-29 00:50:55.465 [main] DEBUG [] c.c.t.TransactionServiceApplication - Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-04-29 00:50:55.466 [main] INFO  [] c.c.t.TransactionServiceApplication - The following 1 profile is active: "dev"
+2026-04-29 00:50:56.319 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-29 00:50:56.400 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 69 ms. Found 1 JPA repository interface.
+2026-04-29 00:50:56.908 [main] INFO  [] o.s.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8082 (http)
+2026-04-29 00:50:56.921 [main] INFO  [] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-04-29 00:50:56.922 [main] INFO  [] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-04-29 00:50:57.032 [main] INFO  [] o.s.b.w.c.s.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 1513 ms
+2026-04-29 00:50:57.213 [main] INFO  [] org.hibernate.orm.jpa - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-29 00:50:57.276 [main] INFO  [] org.hibernate.orm.core - HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-04-29 00:50:57.775 [main] INFO  [] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-29 00:50:57.812 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Starting...
+2026-04-29 00:50:58.023 [main] INFO  [] com.zaxxer.hikari.pool.HikariPool - TransactionHikariPool - Added connection com.mysql.cj.jdbc.ConnectionImpl@3a7d914c
+2026-04-29 00:50:58.025 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Start completed.
+2026-04-29 00:50:58.069 [main] WARN  [] org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-04-29 00:50:58.092 [main] INFO  [] o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/banksphere_transactions_dev?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.44
+	Default catalog/schema: banksphere_transactions_dev/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-29 00:50:59.023 [main] INFO  [] org.hibernate.orm.core - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-29 00:50:59.026 [main] INFO  [] org.hibernate.orm.jdbc.batch - HHH100501: Automatic JDBC statement batching enabled (maximum batch size 50)
+2026-04-29 00:50:59.104 [main] DEBUG [] org.hibernate.SQL - 
+    create table transactions (
+        transaction_id varchar(36) not null,
+        amount decimal(19,4) not null,
+        channel enum ('API','ATM','BRANCH','MOBILE_APP','NET_BANKING','UPI'),
+        completed_at datetime(6),
+        created_at datetime(6) not null,
+        currency varchar(3) not null,
+        description varchar(255),
+        device_info varchar(255),
+        external_reference_id varchar(100),
+        fee decimal(10,4),
+        geolocation varchar(50),
+        idempotency_key varchar(100),
+        initiated_by varchar(100),
+        initiator_ip varchar(45),
+        last_modified_by varchar(100),
+        parent_transaction_id varchar(36),
+        receiver_account_id varchar(20),
+        receiver_balance_after decimal(19,4),
+        reference_number varchar(50) not null,
+        remarks varchar(500),
+        sender_account_id varchar(20),
+        sender_balance_after decimal(19,4),
+        status enum ('CANCELLED','FAILED','ON_HOLD','PENDING','PROCESSING','REVERSED','SUCCESS','TIMED_OUT') not null,
+        tax decimal(10,4),
+        transaction_type enum ('DEPOSIT','FEE','INTEREST','PAYMENT','REFUND','REVERSAL','TRANSFER','WITHDRAWAL') not null,
+        updated_at datetime(6) not null,
+        version bigint not null,
+        primary key (transaction_id)
+    ) engine=InnoDB
+2026-04-29 00:50:59.145 [main] DEBUG [] org.hibernate.SQL - 
+    create index idx_sender_account 
+       on transactions (sender_account_id)
+2026-04-29 00:50:59.172 [main] DEBUG [] org.hibernate.SQL - 
+    create index idx_receiver_account 
+       on transactions (receiver_account_id)
+2026-04-29 00:50:59.189 [main] DEBUG [] org.hibernate.SQL - 
+    create index idx_status 
+       on transactions (status)
+2026-04-29 00:50:59.203 [main] DEBUG [] org.hibernate.SQL - 
+    create index idx_created_at 
+       on transactions (created_at)
+2026-04-29 00:50:59.220 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       drop index idx_reference_number
+2026-04-29 00:50:59.632 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       add constraint idx_reference_number unique (reference_number)
+2026-04-29 00:50:59.674 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       drop index UKe58eyb3fj0t2cl16q1ll436b7
+2026-04-29 00:50:59.676 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       add constraint UKe58eyb3fj0t2cl16q1ll436b7 unique (idempotency_key)
+2026-04-29 00:50:59.692 [main] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-29 00:50:59.785 [main] INFO  [] o.s.d.j.r.q.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-29 00:51:01.508 [main] WARN  [] o.s.b.w.s.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'requestMappingHandlerMapping' defined in class path resource [org/springframework/boot/webmvc/autoconfigure/WebMvcAutoConfiguration$EnableWebMvcConfiguration.class]: Unsatisfied dependency expressed through method 'requestMappingHandlerMapping' parameter 0: Error creating bean with name 'mvcContentNegotiationManager' defined in class path resource [org/springframework/boot/webmvc/autoconfigure/WebMvcAutoConfiguration$EnableWebMvcConfiguration.class]: Failed to instantiate [org.springframework.web.accept.ContentNegotiationManager]: Factory method 'mvcContentNegotiationManager' threw exception with message: Error creating bean with name 'jacksonJsonHttpMessageConvertersCustomizer' defined in class path resource [org/springframework/boot/http/converter/autoconfigure/JacksonHttpMessageConvertersConfiguration$JacksonJsonHttpMessageConverterConfiguration.class]: Unsatisfied dependency expressed through method 'jacksonJsonHttpMessageConvertersCustomizer' parameter 0: Error creating bean with name 'jacksonJsonMapper' defined in class path resource [org/springframework/boot/jackson/autoconfigure/JacksonAutoConfiguration.class]: Unsatisfied dependency expressed through method 'jacksonJsonMapper' parameter 0: Error creating bean with name 'jsonMapperBuilder' defined in class path resource [org/springframework/boot/jackson/autoconfigure/JacksonAutoConfiguration.class]: Unsatisfied dependency expressed through method 'jsonMapperBuilder' parameter 0: Error creating bean with name 'standardJsonMapperBuilderCustomizer' defined in class path resource [org/springframework/boot/jackson/autoconfigure/JacksonAutoConfiguration$JacksonJsonMapperBuilderCustomizerConfiguration.class]: Unsatisfied dependency expressed through method 'standardJsonMapperBuilderCustomizer' parameter 0: Error creating bean with name 'spring.jackson-org.springframework.boot.jackson.autoconfigure.JacksonProperties': Could not bind properties to 'JacksonProperties' : prefix=spring.jackson, ignoreInvalidFields=false, ignoreUnknownFields=true
+2026-04-29 00:51:01.508 [main] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-29 00:51:01.511 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Shutdown initiated...
+2026-04-29 00:51:01.518 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Shutdown completed.
+2026-04-29 00:51:01.520 [main] INFO  [] o.a.catalina.core.StandardService - Stopping service [Tomcat]
+2026-04-29 00:51:01.529 [main] INFO  [] o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-04-29 00:51:01.545 [main] ERROR [] o.s.b.d.LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Failed to bind properties under 'spring.jackson.serialization' to java.util.Map<tools.jackson.databind.SerializationFeature, java.lang.Boolean>:
+
+    Reason: failed to convert java.lang.String to tools.jackson.databind.SerializationFeature (caused by java.lang.IllegalArgumentException: No enum constant tools.jackson.databind.SerializationFeature.write-dates-as-timestamps)
+
+Action:
+
+Update your application's configuration. The following values are valid:
+
+    APPLY_JSON_INCLUDE_FOR_CONTAINERS
+    CLOSE_CLOSEABLE
+    EAGER_SERIALIZER_FETCH
+    FAIL_ON_EMPTY_BEANS
+    FAIL_ON_ORDER_MAP_BY_INCOMPARABLE_KEY
+    FAIL_ON_SELF_REFERENCES
+    FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS
+    FLUSH_AFTER_WRITE_VALUE
+    INDENT_OUTPUT
+    ORDER_MAP_ENTRIES_BY_KEYS
+    USE_EQUALITY_FOR_OBJECT_ID
+    WRAP_EXCEPTIONS
+    WRAP_ROOT_VALUE
+    WRITE_CHAR_ARRAYS_AS_JSON_ARRAYS
+    WRITE_EMPTY_JSON_ARRAYS
+    WRITE_SELF_REFERENCES_AS_NULL
+    WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED
+
+2026-04-29 00:55:41.360 [main] INFO  [] c.c.t.TransactionServiceApplication - Starting TransactionServiceApplication using Java 21 with PID 4444 (C:\Users\2485095\OneDrive - Cognizant\Desktop\Bank App\BankSphere\Transaction-service\target\classes started by 2485095 in C:\Users\2485095\OneDrive - Cognizant\Desktop\Bank App\BankSphere)
+2026-04-29 00:55:41.363 [main] DEBUG [] c.c.t.TransactionServiceApplication - Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-04-29 00:55:41.364 [main] INFO  [] c.c.t.TransactionServiceApplication - The following 1 profile is active: "dev"
+2026-04-29 00:55:42.384 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-29 00:55:42.476 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 82 ms. Found 1 JPA repository interface.
+2026-04-29 00:55:43.098 [main] INFO  [] o.s.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8082 (http)
+2026-04-29 00:55:43.114 [main] INFO  [] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-04-29 00:55:43.114 [main] INFO  [] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-04-29 00:55:43.218 [main] INFO  [] o.s.b.w.c.s.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 1790 ms
+2026-04-29 00:55:43.418 [main] INFO  [] org.hibernate.orm.jpa - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-29 00:55:43.483 [main] INFO  [] org.hibernate.orm.core - HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-04-29 00:55:44.087 [main] INFO  [] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-29 00:55:44.124 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Starting...
+2026-04-29 00:55:44.333 [main] INFO  [] com.zaxxer.hikari.pool.HikariPool - TransactionHikariPool - Added connection com.mysql.cj.jdbc.ConnectionImpl@4535bdc6
+2026-04-29 00:55:44.336 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Start completed.
+2026-04-29 00:55:44.373 [main] WARN  [] org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-04-29 00:55:44.392 [main] INFO  [] o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/banksphere_transactions_dev?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.44
+	Default catalog/schema: banksphere_transactions_dev/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-29 00:55:45.417 [main] INFO  [] org.hibernate.orm.core - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-29 00:55:45.421 [main] INFO  [] org.hibernate.orm.jdbc.batch - HHH100501: Automatic JDBC statement batching enabled (maximum batch size 50)
+2026-04-29 00:55:45.503 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column channel enum ('API','ATM','BRANCH','MOBILE_APP','NET_BANKING','UPI')
+2026-04-29 00:55:45.516 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column status enum ('CANCELLED','FAILED','ON_HOLD','PENDING','PROCESSING','REVERSED','SUCCESS','TIMED_OUT') not null
+2026-04-29 00:55:45.526 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column transaction_type enum ('DEPOSIT','FEE','INTEREST','PAYMENT','REFUND','REVERSAL','TRANSFER','WITHDRAWAL') not null
+2026-04-29 00:55:45.554 [main] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-29 00:55:45.659 [main] INFO  [] o.s.d.j.r.q.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-29 00:55:47.140 [main] WARN  [] o.s.b.w.s.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'requestMappingHandlerMapping' defined in class path resource [org/springframework/boot/webmvc/autoconfigure/WebMvcAutoConfiguration$EnableWebMvcConfiguration.class]: Unsatisfied dependency expressed through method 'requestMappingHandlerMapping' parameter 0: Error creating bean with name 'mvcContentNegotiationManager' defined in class path resource [org/springframework/boot/webmvc/autoconfigure/WebMvcAutoConfiguration$EnableWebMvcConfiguration.class]: Failed to instantiate [org.springframework.web.accept.ContentNegotiationManager]: Factory method 'mvcContentNegotiationManager' threw exception with message: Error creating bean with name 'jacksonJsonHttpMessageConvertersCustomizer' defined in class path resource [org/springframework/boot/http/converter/autoconfigure/JacksonHttpMessageConvertersConfiguration$JacksonJsonHttpMessageConverterConfiguration.class]: Unsatisfied dependency expressed through method 'jacksonJsonHttpMessageConvertersCustomizer' parameter 0: Error creating bean with name 'jacksonJsonMapper' defined in class path resource [org/springframework/boot/jackson/autoconfigure/JacksonAutoConfiguration.class]: Unsatisfied dependency expressed through method 'jacksonJsonMapper' parameter 0: Error creating bean with name 'jsonMapperBuilder' defined in class path resource [org/springframework/boot/jackson/autoconfigure/JacksonAutoConfiguration.class]: Unsatisfied dependency expressed through method 'jsonMapperBuilder' parameter 0: Error creating bean with name 'standardJsonMapperBuilderCustomizer' defined in class path resource [org/springframework/boot/jackson/autoconfigure/JacksonAutoConfiguration$JacksonJsonMapperBuilderCustomizerConfiguration.class]: Unsatisfied dependency expressed through method 'standardJsonMapperBuilderCustomizer' parameter 0: Error creating bean with name 'spring.jackson-org.springframework.boot.jackson.autoconfigure.JacksonProperties': Could not bind properties to 'JacksonProperties' : prefix=spring.jackson, ignoreInvalidFields=false, ignoreUnknownFields=true
+2026-04-29 00:55:47.141 [main] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-29 00:55:47.144 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Shutdown initiated...
+2026-04-29 00:55:47.151 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Shutdown completed.
+2026-04-29 00:55:47.154 [main] INFO  [] o.a.catalina.core.StandardService - Stopping service [Tomcat]
+2026-04-29 00:55:47.162 [main] INFO  [] o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-04-29 00:55:47.177 [main] ERROR [] o.s.b.d.LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Failed to bind properties under 'spring.jackson.serialization' to java.util.Map<tools.jackson.databind.SerializationFeature, java.lang.Boolean>:
+
+    Reason: failed to convert java.lang.String to tools.jackson.databind.SerializationFeature (caused by java.lang.IllegalArgumentException: No enum constant tools.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+
+Action:
+
+Update your application's configuration. The following values are valid:
+
+    APPLY_JSON_INCLUDE_FOR_CONTAINERS
+    CLOSE_CLOSEABLE
+    EAGER_SERIALIZER_FETCH
+    FAIL_ON_EMPTY_BEANS
+    FAIL_ON_ORDER_MAP_BY_INCOMPARABLE_KEY
+    FAIL_ON_SELF_REFERENCES
+    FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS
+    FLUSH_AFTER_WRITE_VALUE
+    INDENT_OUTPUT
+    ORDER_MAP_ENTRIES_BY_KEYS
+    USE_EQUALITY_FOR_OBJECT_ID
+    WRAP_EXCEPTIONS
+    WRAP_ROOT_VALUE
+    WRITE_CHAR_ARRAYS_AS_JSON_ARRAYS
+    WRITE_EMPTY_JSON_ARRAYS
+    WRITE_SELF_REFERENCES_AS_NULL
+    WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED
+
+2026-04-29 00:56:21.034 [main] INFO  [] c.c.t.TransactionServiceApplication - Starting TransactionServiceApplication using Java 21 with PID 13460 (C:\Users\2485095\OneDrive - Cognizant\Desktop\Bank App\BankSphere\Transaction-service\target\classes started by 2485095 in C:\Users\2485095\OneDrive - Cognizant\Desktop\Bank App\BankSphere)
+2026-04-29 00:56:21.038 [main] DEBUG [] c.c.t.TransactionServiceApplication - Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-04-29 00:56:21.039 [main] INFO  [] c.c.t.TransactionServiceApplication - The following 1 profile is active: "dev"
+2026-04-29 00:56:22.194 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-29 00:56:22.299 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 91 ms. Found 1 JPA repository interface.
+2026-04-29 00:56:22.888 [main] INFO  [] o.s.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8082 (http)
+2026-04-29 00:56:22.903 [main] INFO  [] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-04-29 00:56:22.904 [main] INFO  [] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-04-29 00:56:23.021 [main] INFO  [] o.s.b.w.c.s.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 1907 ms
+2026-04-29 00:56:23.222 [main] INFO  [] org.hibernate.orm.jpa - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-29 00:56:23.284 [main] INFO  [] org.hibernate.orm.core - HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-04-29 00:56:23.795 [main] INFO  [] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-29 00:56:23.831 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Starting...
+2026-04-29 00:56:24.020 [main] INFO  [] com.zaxxer.hikari.pool.HikariPool - TransactionHikariPool - Added connection com.mysql.cj.jdbc.ConnectionImpl@3a7d914c
+2026-04-29 00:56:24.022 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Start completed.
+2026-04-29 00:56:24.088 [main] WARN  [] org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-04-29 00:56:24.107 [main] INFO  [] o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/banksphere_transactions_dev?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.44
+	Default catalog/schema: banksphere_transactions_dev/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-29 00:56:25.132 [main] INFO  [] org.hibernate.orm.core - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-29 00:56:25.139 [main] INFO  [] org.hibernate.orm.jdbc.batch - HHH100501: Automatic JDBC statement batching enabled (maximum batch size 50)
+2026-04-29 00:56:25.213 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column channel enum ('API','ATM','BRANCH','MOBILE_APP','NET_BANKING','UPI')
+2026-04-29 00:56:25.254 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column status enum ('CANCELLED','FAILED','ON_HOLD','PENDING','PROCESSING','REVERSED','SUCCESS','TIMED_OUT') not null
+2026-04-29 00:56:25.271 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column transaction_type enum ('DEPOSIT','FEE','INTEREST','PAYMENT','REFUND','REVERSAL','TRANSFER','WITHDRAWAL') not null
+2026-04-29 00:56:25.300 [main] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-29 00:56:25.494 [main] INFO  [] o.s.d.j.r.q.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-29 00:56:27.180 [main] WARN  [] o.s.b.w.s.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'requestMappingHandlerMapping' defined in class path resource [org/springframework/boot/webmvc/autoconfigure/WebMvcAutoConfiguration$EnableWebMvcConfiguration.class]: Unsatisfied dependency expressed through method 'requestMappingHandlerMapping' parameter 0: Error creating bean with name 'mvcContentNegotiationManager' defined in class path resource [org/springframework/boot/webmvc/autoconfigure/WebMvcAutoConfiguration$EnableWebMvcConfiguration.class]: Failed to instantiate [org.springframework.web.accept.ContentNegotiationManager]: Factory method 'mvcContentNegotiationManager' threw exception with message: Error creating bean with name 'jacksonJsonHttpMessageConvertersCustomizer' defined in class path resource [org/springframework/boot/http/converter/autoconfigure/JacksonHttpMessageConvertersConfiguration$JacksonJsonHttpMessageConverterConfiguration.class]: Unsatisfied dependency expressed through method 'jacksonJsonHttpMessageConvertersCustomizer' parameter 0: Error creating bean with name 'jacksonJsonMapper' defined in class path resource [org/springframework/boot/jackson/autoconfigure/JacksonAutoConfiguration.class]: Unsatisfied dependency expressed through method 'jacksonJsonMapper' parameter 0: Error creating bean with name 'jsonMapperBuilder' defined in class path resource [org/springframework/boot/jackson/autoconfigure/JacksonAutoConfiguration.class]: Unsatisfied dependency expressed through method 'jsonMapperBuilder' parameter 0: Error creating bean with name 'standardJsonMapperBuilderCustomizer' defined in class path resource [org/springframework/boot/jackson/autoconfigure/JacksonAutoConfiguration$JacksonJsonMapperBuilderCustomizerConfiguration.class]: Unsatisfied dependency expressed through method 'standardJsonMapperBuilderCustomizer' parameter 0: Error creating bean with name 'spring.jackson-org.springframework.boot.jackson.autoconfigure.JacksonProperties': Could not bind properties to 'JacksonProperties' : prefix=spring.jackson, ignoreInvalidFields=false, ignoreUnknownFields=true
+2026-04-29 00:56:27.181 [main] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-29 00:56:27.185 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Shutdown initiated...
+2026-04-29 00:56:27.192 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Shutdown completed.
+2026-04-29 00:56:27.194 [main] INFO  [] o.a.catalina.core.StandardService - Stopping service [Tomcat]
+2026-04-29 00:56:27.202 [main] INFO  [] o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-04-29 00:56:27.220 [main] ERROR [] o.s.b.d.LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Failed to bind properties under 'spring.jackson.serialization' to java.util.Map<tools.jackson.databind.SerializationFeature, java.lang.Boolean>:
+
+    Reason: failed to convert java.lang.String to tools.jackson.databind.SerializationFeature (caused by java.lang.IllegalArgumentException: No enum constant tools.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+
+Action:
+
+Update your application's configuration. The following values are valid:
+
+    APPLY_JSON_INCLUDE_FOR_CONTAINERS
+    CLOSE_CLOSEABLE
+    EAGER_SERIALIZER_FETCH
+    FAIL_ON_EMPTY_BEANS
+    FAIL_ON_ORDER_MAP_BY_INCOMPARABLE_KEY
+    FAIL_ON_SELF_REFERENCES
+    FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS
+    FLUSH_AFTER_WRITE_VALUE
+    INDENT_OUTPUT
+    ORDER_MAP_ENTRIES_BY_KEYS
+    USE_EQUALITY_FOR_OBJECT_ID
+    WRAP_EXCEPTIONS
+    WRAP_ROOT_VALUE
+    WRITE_CHAR_ARRAYS_AS_JSON_ARRAYS
+    WRITE_EMPTY_JSON_ARRAYS
+    WRITE_SELF_REFERENCES_AS_NULL
+    WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED
+
+2026-04-29 00:59:12.037 [main] INFO  [] c.c.t.TransactionServiceApplication - Starting TransactionServiceApplication using Java 21 with PID 14616 (C:\Users\2485095\OneDrive - Cognizant\Desktop\Bank App\BankSphere\Transaction-service\target\classes started by 2485095 in C:\Users\2485095\OneDrive - Cognizant\Desktop\Bank App\BankSphere)
+2026-04-29 00:59:12.040 [main] DEBUG [] c.c.t.TransactionServiceApplication - Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-04-29 00:59:12.041 [main] INFO  [] c.c.t.TransactionServiceApplication - The following 1 profile is active: "dev"
+2026-04-29 00:59:12.905 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-29 00:59:12.986 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 69 ms. Found 1 JPA repository interface.
+2026-04-29 00:59:13.571 [main] INFO  [] o.s.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8082 (http)
+2026-04-29 00:59:13.586 [main] INFO  [] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-04-29 00:59:13.586 [main] INFO  [] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-04-29 00:59:13.676 [main] INFO  [] o.s.b.w.c.s.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 1584 ms
+2026-04-29 00:59:13.864 [main] INFO  [] org.hibernate.orm.jpa - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-29 00:59:13.934 [main] INFO  [] org.hibernate.orm.core - HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-04-29 00:59:14.467 [main] INFO  [] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-29 00:59:14.507 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Starting...
+2026-04-29 00:59:14.699 [main] INFO  [] com.zaxxer.hikari.pool.HikariPool - TransactionHikariPool - Added connection com.mysql.cj.jdbc.ConnectionImpl@2ace1cd3
+2026-04-29 00:59:14.702 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Start completed.
+2026-04-29 00:59:14.736 [main] WARN  [] org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-04-29 00:59:14.755 [main] INFO  [] o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/banksphere_transactions_dev?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.44
+	Default catalog/schema: banksphere_transactions_dev/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-29 00:59:15.665 [main] INFO  [] org.hibernate.orm.core - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-29 00:59:15.669 [main] INFO  [] org.hibernate.orm.jdbc.batch - HHH100501: Automatic JDBC statement batching enabled (maximum batch size 50)
+2026-04-29 00:59:15.721 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column channel enum ('API','ATM','BRANCH','MOBILE_APP','NET_BANKING','UPI')
+2026-04-29 00:59:15.758 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column status enum ('CANCELLED','FAILED','ON_HOLD','PENDING','PROCESSING','REVERSED','SUCCESS','TIMED_OUT') not null
+2026-04-29 00:59:15.766 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column transaction_type enum ('DEPOSIT','FEE','INTEREST','PAYMENT','REFUND','REVERSAL','TRANSFER','WITHDRAWAL') not null
+2026-04-29 00:59:15.796 [main] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-29 00:59:15.893 [main] INFO  [] o.s.d.j.r.q.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-29 00:59:17.861 [main] INFO  [] o.s.boot.tomcat.TomcatWebServer - Tomcat started on port 8082 (http) with context path '/'
+2026-04-29 00:59:17.866 [main] INFO  [] c.c.t.TransactionServiceApplication - Started TransactionServiceApplication in 6.463 seconds (process running for 7.031)
+2026-04-29 01:00:14.126 [http-nio-8082-exec-2] INFO  [] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-29 01:00:15.937 [http-nio-8082-exec-9] INFO  [] o.s.api.AbstractOpenApiResource - Init duration for springdoc-openapi is: 1307 ms
+2026-04-29 01:04:38.934 [http-nio-8082-exec-15] WARN  [] c.c.t.e.GlobalExceptionHandler - Malformed request body: JSON parse error: Cannot deserialize value of type `com.cts.transactionservice.model.enums.TransactionType` from String "Deposit": not one of the values accepted for Enum class: [WITHDRAWAL, PAYMENT, REFUND, INTEREST, TRANSFER, DEPOSIT, FEE, REVERSAL]
+2026-04-29 01:07:21.267 [http-nio-8082-exec-16] WARN  [] c.c.t.e.GlobalExceptionHandler - Request body validation failed: Geolocation must be a valid lat,long coordinate
+2026-04-29 01:10:42.181 [http-nio-8082-exec-17] WARN  [] c.c.t.e.GlobalExceptionHandler - Malformed request body: JSON parse error: Unexpected character ('`' (code 96)): expected a valid value (JSON String, Number, Array, Object or token 'null', 'true' or 'false')
+2026-04-29 01:12:04.387 [http-nio-8082-exec-18] WARN  [] c.c.t.e.GlobalExceptionHandler - Request body validation failed: Sender account ID must contain only uppercase letters and digits; Receiver account ID must contain only uppercase letters and digits
+2026-04-29 01:12:34.841 [http-nio-8082-exec-19] INFO  [] c.c.t.c.TransactionController - POST /api/v1/transactions | type=DEPOSIT | initiatedBy=SYSTEM
+2026-04-29 01:12:34.863 [http-nio-8082-exec-19] INFO  [] c.c.t.s.impl.TransactionServiceImpl - Initiating transaction | type=DEPOSIT | idempotencyKey=TXN001
+2026-04-29 01:12:35.057 [http-nio-8082-exec-19] DEBUG [] org.hibernate.SQL - 
+    /* SELECT
+        t.transactionId 
+    FROM
+        Transaction t 
+    WHERE
+        t.idempotencyKey = :idempotencyKey */ select
+            t1_0.transaction_id 
+        from
+            transactions t1_0 
+        where
+            t1_0.idempotency_key=? 
+        limit
+            ?
+2026-04-29 01:12:35.111 [http-nio-8082-exec-19] DEBUG [] org.hibernate.SQL - 
+    /* SELECT
+        COALESCE(SUM(t.amount), 0) 
+    FROM
+        Transaction t 
+    WHERE
+        t.senderAccountId = :accountId 
+        AND t.status = 'SUCCESS' 
+        AND t.createdAt BETWEEN :from AND :to */ select
+            coalesce(sum(t1_0.amount), 0) 
+        from
+            transactions t1_0 
+        where
+            t1_0.sender_account_id=? 
+            and t1_0.status='SUCCESS' 
+            and t1_0.created_at between ? and ?
+2026-04-29 01:12:35.134 [http-nio-8082-exec-19] DEBUG [] org.hibernate.SQL - 
+    /* SELECT
+        COUNT(t) 
+    FROM
+        Transaction t 
+    WHERE
+        t.senderAccountId = :accountId 
+        AND t.createdAt >= :since */ select
+            count(t1_0.transaction_id) 
+        from
+            transactions t1_0 
+        where
+            t1_0.sender_account_id=? 
+            and t1_0.created_at>=?
+2026-04-29 01:12:35.144 [http-nio-8082-exec-19] DEBUG [] org.hibernate.SQL - 
+    /* SELECT
+        t.transactionId 
+    FROM
+        Transaction t 
+    WHERE
+        t.referenceNumber = :referenceNumber */ select
+            t1_0.transaction_id 
+        from
+            transactions t1_0 
+        where
+            t1_0.reference_number=? 
+        limit
+            ?
+2026-04-29 01:12:35.201 [http-nio-8082-exec-19] INFO  [] c.c.t.s.impl.TransactionServiceImpl - Transaction persisted | transactionId=4d3a5501-3104-420d-86d9-363f01c158b5 | referenceNumber=TXN-20260429-468392991
+2026-04-29 01:12:35.235 [http-nio-8082-exec-19] DEBUG [] org.hibernate.SQL - 
+    /* insert 
+    for
+        com.cts.transactionservice.model.entity.Transaction
+        */insert 
+    into
+        transactions (amount, channel, completed_at, created_at, currency, description, device_info, external_reference_id, fee, geolocation, idempotency_key, initiated_by, initiator_ip, last_modified_by, parent_transaction_id, receiver_account_id, receiver_balance_after, reference_number, remarks, sender_account_id, sender_balance_after, status, tax, transaction_type, updated_at, version, transaction_id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-04-29 01:14:10.304 [SpringApplicationShutdownHook] INFO  [] o.s.boot.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-04-29 01:14:10.322 [tomcat-shutdown] INFO  [] o.s.boot.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-04-29 01:14:10.329 [SpringApplicationShutdownHook] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-29 01:14:10.333 [SpringApplicationShutdownHook] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Shutdown initiated...
+2026-04-29 01:14:10.343 [SpringApplicationShutdownHook] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Shutdown completed.
+2026-04-29 09:41:48.252 [main] INFO  [] c.c.t.TransactionServiceApplication - Starting TransactionServiceApplication using Java 21 with PID 17112 (C:\Users\2485095\OneDrive - Cognizant\Desktop\Bank App\BankSphere\Transaction-service\target\classes started by 2485095 in C:\Users\2485095\OneDrive - Cognizant\Desktop\Bank App\BankSphere)
+2026-04-29 09:41:48.255 [main] DEBUG [] c.c.t.TransactionServiceApplication - Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-04-29 09:41:48.256 [main] INFO  [] c.c.t.TransactionServiceApplication - The following 1 profile is active: "dev"
+2026-04-29 09:41:49.240 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-29 09:41:49.361 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 103 ms. Found 1 JPA repository interface.
+2026-04-29 09:41:50.082 [main] INFO  [] o.s.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8082 (http)
+2026-04-29 09:41:50.098 [main] INFO  [] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-04-29 09:41:50.099 [main] INFO  [] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-04-29 09:41:50.212 [main] INFO  [] o.s.b.w.c.s.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 1905 ms
+2026-04-29 09:41:50.442 [main] INFO  [] org.hibernate.orm.jpa - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-29 09:41:50.525 [main] INFO  [] org.hibernate.orm.core - HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-04-29 09:41:51.058 [main] INFO  [] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-29 09:41:51.095 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Starting...
+2026-04-29 09:41:51.283 [main] INFO  [] com.zaxxer.hikari.pool.HikariPool - TransactionHikariPool - Added connection com.mysql.cj.jdbc.ConnectionImpl@7337bd2e
+2026-04-29 09:41:51.286 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Start completed.
+2026-04-29 09:41:51.330 [main] WARN  [] org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-04-29 09:41:51.350 [main] INFO  [] o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/banksphere_transactions_dev?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.44
+	Default catalog/schema: banksphere_transactions_dev/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-29 09:41:52.307 [main] INFO  [] org.hibernate.orm.core - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-29 09:41:52.310 [main] INFO  [] org.hibernate.orm.jdbc.batch - HHH100501: Automatic JDBC statement batching enabled (maximum batch size 50)
+2026-04-29 09:41:52.368 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column channel enum ('API','ATM','BRANCH','MOBILE_APP','NET_BANKING','UPI')
+2026-04-29 09:41:52.394 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column status enum ('CANCELLED','FAILED','ON_HOLD','PENDING','PROCESSING','REVERSED','SUCCESS','TIMED_OUT') not null
+2026-04-29 09:41:52.403 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column transaction_type enum ('DEPOSIT','FEE','INTEREST','PAYMENT','REFUND','REVERSAL','TRANSFER','WITHDRAWAL') not null
+2026-04-29 09:41:52.498 [main] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-29 09:41:52.636 [main] INFO  [] o.s.d.j.r.q.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-29 09:41:54.376 [main] INFO  [] o.s.boot.tomcat.TomcatWebServer - Tomcat started on port 8082 (http) with context path '/'
+2026-04-29 09:41:54.380 [main] INFO  [] c.c.t.TransactionServiceApplication - Started TransactionServiceApplication in 6.845 seconds (process running for 7.555)
+2026-04-29 09:42:07.836 [http-nio-8082-exec-1] INFO  [] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-29 09:42:09.608 [http-nio-8082-exec-8] INFO  [] o.s.api.AbstractOpenApiResource - Init duration for springdoc-openapi is: 1349 ms
+2026-04-29 09:45:33.047 [http-nio-8082-exec-13] INFO  [] c.c.t.c.TransactionController - POST /api/v1/transactions | type=TRANSFER | initiatedBy=SYSTEM
+2026-04-29 09:45:33.063 [http-nio-8082-exec-13] INFO  [] c.c.t.s.impl.TransactionServiceImpl - Initiating transaction | type=TRANSFER | idempotencyKey=TXN002
+2026-04-29 09:45:33.206 [http-nio-8082-exec-13] DEBUG [] org.hibernate.SQL - 
+    /* SELECT
+        t.transactionId 
+    FROM
+        Transaction t 
+    WHERE
+        t.idempotencyKey = :idempotencyKey */ select
+            t1_0.transaction_id 
+        from
+            transactions t1_0 
+        where
+            t1_0.idempotency_key=? 
+        limit
+            ?
+2026-04-29 09:45:33.247 [http-nio-8082-exec-13] DEBUG [] org.hibernate.SQL - 
+    /* SELECT
+        COALESCE(SUM(t.amount), 0) 
+    FROM
+        Transaction t 
+    WHERE
+        t.senderAccountId = :accountId 
+        AND t.status = 'SUCCESS' 
+        AND t.createdAt BETWEEN :from AND :to */ select
+            coalesce(sum(t1_0.amount), 0) 
+        from
+            transactions t1_0 
+        where
+            t1_0.sender_account_id=? 
+            and t1_0.status='SUCCESS' 
+            and t1_0.created_at between ? and ?
+2026-04-29 09:45:33.263 [http-nio-8082-exec-13] DEBUG [] org.hibernate.SQL - 
+    /* SELECT
+        COUNT(t) 
+    FROM
+        Transaction t 
+    WHERE
+        t.senderAccountId = :accountId 
+        AND t.createdAt >= :since */ select
+            count(t1_0.transaction_id) 
+        from
+            transactions t1_0 
+        where
+            t1_0.sender_account_id=? 
+            and t1_0.created_at>=?
+2026-04-29 09:45:33.275 [http-nio-8082-exec-13] DEBUG [] org.hibernate.SQL - 
+    /* SELECT
+        t.transactionId 
+    FROM
+        Transaction t 
+    WHERE
+        t.referenceNumber = :referenceNumber */ select
+            t1_0.transaction_id 
+        from
+            transactions t1_0 
+        where
+            t1_0.reference_number=? 
+        limit
+            ?
+2026-04-29 09:45:33.322 [http-nio-8082-exec-13] INFO  [] c.c.t.s.impl.TransactionServiceImpl - Transaction persisted | transactionId=569bf6a6-21e8-42d5-bf9b-8a0a2c4dc48f | referenceNumber=TXN-20260429-486053152
+2026-04-29 09:45:33.353 [http-nio-8082-exec-13] DEBUG [] org.hibernate.SQL - 
+    /* insert 
+    for
+        com.cts.transactionservice.model.entity.Transaction
+        */insert 
+    into
+        transactions (amount, channel, completed_at, created_at, currency, description, device_info, external_reference_id, fee, geolocation, idempotency_key, initiated_by, initiator_ip, last_modified_by, parent_transaction_id, receiver_account_id, receiver_balance_after, reference_number, remarks, sender_account_id, sender_balance_after, status, tax, transaction_type, updated_at, version, transaction_id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-04-29 09:46:11.879 [SpringApplicationShutdownHook] INFO  [] o.s.boot.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-04-29 09:46:11.887 [tomcat-shutdown] INFO  [] o.s.boot.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-04-29 09:46:11.891 [SpringApplicationShutdownHook] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-29 09:46:11.893 [SpringApplicationShutdownHook] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Shutdown initiated...
+2026-04-29 09:46:11.900 [SpringApplicationShutdownHook] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Shutdown completed.
+2026-04-29 12:22:54.952 [main] INFO  [] c.c.t.TransactionServiceApplication - Starting TransactionServiceApplication using Java 21 with PID 22044 (C:\Users\2485095\OneDrive - Cognizant\Desktop\Bank App\BankSphere\Transaction-service\target\classes started by 2485095 in C:\Users\2485095\OneDrive - Cognizant\Desktop\Bank App\BankSphere)
+2026-04-29 12:22:54.953 [main] DEBUG [] c.c.t.TransactionServiceApplication - Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-04-29 12:22:54.953 [main] INFO  [] c.c.t.TransactionServiceApplication - The following 1 profile is active: "dev"
+2026-04-29 12:22:55.859 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-29 12:22:55.939 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 70 ms. Found 1 JPA repository interface.
+2026-04-29 12:22:56.545 [main] INFO  [] o.s.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8082 (http)
+2026-04-29 12:22:56.556 [main] INFO  [] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-04-29 12:22:56.556 [main] INFO  [] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-04-29 12:22:56.652 [main] INFO  [] o.s.b.w.c.s.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 1653 ms
+2026-04-29 12:22:56.855 [main] INFO  [] org.hibernate.orm.jpa - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-29 12:22:56.954 [main] INFO  [] org.hibernate.orm.core - HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-04-29 12:22:57.557 [main] INFO  [] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-29 12:22:57.597 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Starting...
+2026-04-29 12:22:57.819 [main] INFO  [] com.zaxxer.hikari.pool.HikariPool - TransactionHikariPool - Added connection com.mysql.cj.jdbc.ConnectionImpl@7c0ff7a0
+2026-04-29 12:22:57.821 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Start completed.
+2026-04-29 12:22:57.875 [main] WARN  [] org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-04-29 12:22:57.898 [main] INFO  [] o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/banksphere_transactions_dev?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.44
+	Default catalog/schema: banksphere_transactions_dev/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-29 12:22:59.011 [main] INFO  [] org.hibernate.orm.core - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-29 12:22:59.019 [main] INFO  [] org.hibernate.orm.jdbc.batch - HHH100501: Automatic JDBC statement batching enabled (maximum batch size 50)
+2026-04-29 12:22:59.104 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column channel enum ('API','ATM','BRANCH','MOBILE_APP','NET_BANKING','UPI')
+2026-04-29 12:22:59.134 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column status enum ('CANCELLED','FAILED','ON_HOLD','PENDING','PROCESSING','REVERSED','SUCCESS','TIMED_OUT') not null
+2026-04-29 12:22:59.159 [main] DEBUG [] org.hibernate.SQL - 
+    alter table transactions 
+       modify column transaction_type enum ('DEPOSIT','FEE','INTEREST','PAYMENT','REFUND','REVERSAL','TRANSFER','WITHDRAWAL') not null
+2026-04-29 12:22:59.194 [main] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-29 12:22:59.327 [main] INFO  [] o.s.d.j.r.q.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-29 12:23:01.487 [main] INFO  [] o.s.boot.tomcat.TomcatWebServer - Tomcat started on port 8082 (http) with context path '/'
+2026-04-29 12:23:01.492 [main] INFO  [] c.c.t.TransactionServiceApplication - Started TransactionServiceApplication in 7.194 seconds (process running for 7.945)
+2026-04-29 12:23:47.929 [http-nio-8082-exec-2] INFO  [] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-29 12:23:49.906 [http-nio-8082-exec-9] INFO  [] o.s.api.AbstractOpenApiResource - Init duration for springdoc-openapi is: 1375 ms
+2026-04-29 12:25:44.500 [SpringApplicationShutdownHook] INFO  [] o.s.boot.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-04-29 12:25:44.515 [tomcat-shutdown] INFO  [] o.s.boot.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-04-29 12:25:44.521 [SpringApplicationShutdownHook] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-29 12:25:44.524 [SpringApplicationShutdownHook] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Shutdown initiated...
+2026-04-29 12:25:44.538 [SpringApplicationShutdownHook] INFO  [] com.zaxxer.hikari.HikariDataSource - TransactionHikariPool - Shutdown completed.
