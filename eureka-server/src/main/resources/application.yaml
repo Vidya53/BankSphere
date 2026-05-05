@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: eureka-server
+  profiles:
+    active: dev
+
+server:
+  port: 8761
+  servlet:
+    context-path: /
+
+eureka:
+  instance:
+    # Eureka server does NOT register itself by default in standalone mode
+    hostname: localhost
+    prefer-ip-address: false
+
+  client:
+    # Tell Eureka Server NOT to register itself (standalone setup)
+    register-with-eureka: false
+    fetch-registry: false
+    # Optional: Service registry URL (leave empty for standalone)
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+
+  server:
+    # Enable self-preservation mode (default: enabled)
+    enable-self-preservation: true
+    # Eviction interval (in milliseconds) — check for expired instances
+    eviction-interval-timer-in-ms: 60000
+    # Response cache update interval
+    response-cache-update-interval-ms: 30000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.netflix.eureka: DEBUG
+    com.netflix.discovery: DEBUG
+

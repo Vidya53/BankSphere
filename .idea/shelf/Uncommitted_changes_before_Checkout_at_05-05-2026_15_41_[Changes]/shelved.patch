@@ -1,0 +1,918 @@
+Index: identity-services/pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\r\n    <modelVersion>4.0.0</modelVersion>\r\n    <parent>\r\n        <groupId>org.springframework.boot</groupId>\r\n        <artifactId>spring-boot-starter-parent</artifactId>\r\n        <version>4.0.6</version>\r\n        <relativePath/> <!-- lookup parent from repository -->\r\n    </parent>\r\n    <groupId>com.cts</groupId>\r\n    <artifactId>identity-services</artifactId>\r\n    <version>0.0.1-SNAPSHOT</version>\r\n    <name>identity-services</name>\r\n    <description>identity-services</description>\r\n    <url/>\r\n    <licenses>\r\n        <license/>\r\n    </licenses>\r\n    <developers>\r\n        <developer/>\r\n    </developers>\r\n    <scm>\r\n        <connection/>\r\n        <developerConnection/>\r\n        <tag/>\r\n        <url/>\r\n    </scm>\r\n    <properties>\r\n        <java.version>21</java.version>\r\n    </properties>\r\n    <dependencies>\r\n\r\n        <!-- Web -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-web</artifactId>\r\n        </dependency>\r\n\r\n        <!-- JPA -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-data-jpa</artifactId>\r\n        </dependency>\r\n\r\n        <!-- MySQL -->\r\n        <dependency>\r\n            <groupId>com.mysql</groupId>\r\n            <artifactId>mysql-connector-j</artifactId>\r\n        </dependency>\r\n\r\n        <!-- Validation -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-validation</artifactId>\r\n        </dependency>\r\n\r\n        <dependency>\r\n            <groupId>org.projectlombok</groupId>\r\n            <artifactId>lombok</artifactId>\r\n            <version>1.18.44</version>\r\n            <scope>provided</scope>\r\n        </dependency>\r\n\r\n\r\n    </dependencies>\r\n\r\n    <build>\r\n        <plugins>\r\n            <plugin>\r\n                <groupId>org.springframework.boot</groupId>\r\n                <artifactId>spring-boot-maven-plugin</artifactId>\r\n            </plugin>\r\n        </plugins>\r\n    </build>\r\n\r\n</project>\r\n
+===================================================================
+diff --git a/identity-services/pom.xml b/identity-services/pom.xml
+--- a/identity-services/pom.xml	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/identity-services/pom.xml	(date 1777974978661)
+@@ -28,6 +28,7 @@
+     </scm>
+     <properties>
+         <java.version>21</java.version>
++        <spring-cloud.version>2023.0.1</spring-cloud.version>
+     </properties>
+     <dependencies>
+ 
+@@ -62,9 +63,60 @@
+             <scope>provided</scope>
+         </dependency>
+ 
++        <!-- Spring Cloud Eureka (Service Discovery) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
++        </dependency>
++
++        <!-- Spring Cloud OpenFeign (Declarative REST Client) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-openfeign</artifactId>
++        </dependency>
++
++        <!-- Spring Cloud LoadBalancer (Client-side load balancing) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
++        </dependency>
++
++        <!-- Resilience4j (Fault tolerance: Circuit Breaker, Retry, Timeout) -->
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-spring-boot3</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-circuitbreaker</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-retry</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-timelimiter</artifactId>
++            <version>2.1.0</version>
++        </dependency>
+ 
+     </dependencies>
+ 
++    <dependencyManagement>
++        <dependencies>
++            <dependency>
++                <groupId>org.springframework.cloud</groupId>
++                <artifactId>spring-cloud-dependencies</artifactId>
++                <version>${spring-cloud.version}</version>
++                <type>pom</type>
++                <scope>import</scope>
++            </dependency>
++        </dependencies>
++    </dependencyManagement>
++
+     <build>
+         <plugins>
+             <plugin>
+Index: Account-service/src/main/java/com/cts/accountservice/AccountServiceApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cts.accountservice;\r\n\r\nimport org.springframework.boot.SpringApplication;\r\nimport org.springframework.boot.autoconfigure.SpringBootApplication;\r\n\r\n@SpringBootApplication\r\npublic class AccountServiceApplication {\r\n\r\n    public static void main(String[] args) {\r\n        SpringApplication.run(AccountServiceApplication.class, args);\r\n    }\r\n\r\n}\r\n
+===================================================================
+diff --git a/Account-service/src/main/java/com/cts/accountservice/AccountServiceApplication.java b/Account-service/src/main/java/com/cts/accountservice/AccountServiceApplication.java
+--- a/Account-service/src/main/java/com/cts/accountservice/AccountServiceApplication.java	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/Account-service/src/main/java/com/cts/accountservice/AccountServiceApplication.java	(date 1777975055027)
+@@ -2,8 +2,12 @@
+ 
+ import org.springframework.boot.SpringApplication;
+ import org.springframework.boot.autoconfigure.SpringBootApplication;
++import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
++import org.springframework.cloud.openfeign.EnableFeignClients;
+ 
+ @SpringBootApplication
++@EnableDiscoveryClient
++@EnableFeignClients
+ public class AccountServiceApplication {
+ 
+     public static void main(String[] args) {
+Index: Transaction-service/src/main/java/com/cts/transactionservice/TransactionServiceApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cts.transactionservice;\r\nimport org.springframework.boot.SpringApplication;\r\nimport org.springframework.boot.autoconfigure.SpringBootApplication;\r\n@SpringBootApplication\r\npublic class TransactionServiceApplication {\r\n    public static void main(String[] args) {\r\n        SpringApplication.run(TransactionServiceApplication.class, args);\r\n    }\r\n\r\n}\r\n
+===================================================================
+diff --git a/Transaction-service/src/main/java/com/cts/transactionservice/TransactionServiceApplication.java b/Transaction-service/src/main/java/com/cts/transactionservice/TransactionServiceApplication.java
+--- a/Transaction-service/src/main/java/com/cts/transactionservice/TransactionServiceApplication.java	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/Transaction-service/src/main/java/com/cts/transactionservice/TransactionServiceApplication.java	(date 1777975064103)
+@@ -1,7 +1,12 @@
+ package com.cts.transactionservice;
+ import org.springframework.boot.SpringApplication;
+ import org.springframework.boot.autoconfigure.SpringBootApplication;
++import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
++import org.springframework.cloud.openfeign.EnableFeignClients;
++
+ @SpringBootApplication
++@EnableDiscoveryClient
++@EnableFeignClients
+ public class TransactionServiceApplication {
+     public static void main(String[] args) {
+         SpringApplication.run(TransactionServiceApplication.class, args);
+Index: loan-service/pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\r\n         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0\r\n         https://maven.apache.org/xsd/maven-4.0.0.xsd\">\r\n\r\n    <modelVersion>4.0.0</modelVersion>\r\n\r\n    <parent>\r\n        <groupId>org.springframework.boot</groupId>\r\n        <artifactId>spring-boot-starter-parent</artifactId>\r\n        <version>3.3.2</version>\r\n        <relativePath/>\r\n    </parent>\r\n\r\n    <groupId>com.cts</groupId>\r\n    <artifactId>loan-services</artifactId>\r\n    <version>0.0.1-SNAPSHOT</version>\r\n    <name>loan-service</name>\r\n    <description>Loan Microservice</description>\r\n\r\n    <properties>\r\n        <java.version>21</java.version>\r\n    </properties>\r\n\r\n    <dependencies>\r\n\r\n        <!-- Web -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-web</artifactId>\r\n        </dependency>\r\n\r\n        <!-- JPA -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-data-jpa</artifactId>\r\n        </dependency>\r\n\r\n        <!-- Validation -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-validation</artifactId>\r\n        </dependency>\r\n\r\n        <!-- MySQL -->\r\n        <dependency>\r\n            <groupId>com.mysql</groupId>\r\n            <artifactId>mysql-connector-j</artifactId>\r\n            <scope>runtime</scope>\r\n        </dependency>\r\n\r\n        <!-- Lombok -->\r\n        <dependency>\r\n            <groupId>org.projectlombok</groupId>\r\n            <artifactId>lombok</artifactId>\r\n            <optional>true</optional>\r\n        </dependency>\r\n\r\n        <!-- OpenAPI / Swagger -->\r\n        <dependency>\r\n            <groupId>org.springdoc</groupId>\r\n            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>\r\n            <version>2.5.0</version>\r\n        </dependency>\r\n\r\n        <!-- Testing -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-test</artifactId>\r\n            <scope>test</scope>\r\n        </dependency>\r\n\r\n    </dependencies>\r\n\r\n    <build>\r\n        <plugins>\r\n            <plugin>\r\n                <groupId>org.springframework.boot</groupId>\r\n                <artifactId>spring-boot-maven-plugin</artifactId>\r\n                <configuration>\r\n                    <excludes>\r\n                        <exclude>\r\n                            <groupId>org.projectlombok</groupId>\r\n                            <artifactId>lombok</artifactId>\r\n                        </exclude>\r\n                    </excludes>\r\n                </configuration>\r\n            </plugin>\r\n        </plugins>\r\n    </build>\r\n\r\n</project>
+===================================================================
+diff --git a/loan-service/pom.xml b/loan-service/pom.xml
+--- a/loan-service/pom.xml	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/loan-service/pom.xml	(date 1777974967553)
+@@ -9,7 +9,7 @@
+     <parent>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-parent</artifactId>
+-        <version>3.3.2</version>
++        <version>4.0.6</version>
+         <relativePath/>
+     </parent>
+ 
+@@ -21,6 +21,7 @@
+ 
+     <properties>
+         <java.version>21</java.version>
++        <spring-cloud.version>2023.0.1</spring-cloud.version>
+     </properties>
+ 
+     <dependencies>
+@@ -70,9 +71,61 @@
+             <artifactId>spring-boot-starter-test</artifactId>
+             <scope>test</scope>
+         </dependency>
++
++        <!-- Spring Cloud Eureka (Service Discovery) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
++        </dependency>
++
++        <!-- Spring Cloud OpenFeign (Declarative REST Client) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-openfeign</artifactId>
++        </dependency>
++
++        <!-- Spring Cloud LoadBalancer (Client-side load balancing) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
++        </dependency>
++
++        <!-- Resilience4j (Fault tolerance: Circuit Breaker, Retry, Timeout) -->
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-spring-boot3</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-circuitbreaker</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-retry</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-timelimiter</artifactId>
++            <version>2.1.0</version>
++        </dependency>
+ 
+     </dependencies>
+ 
++    <dependencyManagement>
++        <dependencies>
++            <dependency>
++                <groupId>org.springframework.cloud</groupId>
++                <artifactId>spring-cloud-dependencies</artifactId>
++                <version>${spring-cloud.version}</version>
++                <type>pom</type>
++                <scope>import</scope>
++            </dependency>
++        </dependencies>
++    </dependencyManagement>
++
+     <build>
+         <plugins>
+             <plugin>
+Index: customer-services/pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\r\n    <modelVersion>4.0.0</modelVersion>\r\n\r\n    <parent>\r\n        <groupId>org.springframework.boot</groupId>\r\n        <artifactId>spring-boot-starter-parent</artifactId>\r\n        <version>4.0.6</version>\r\n        <relativePath/>\r\n    </parent>\r\n\r\n    <groupId>com.cts</groupId>\r\n    <artifactId>customer-services</artifactId>\r\n    <version>0.0.1-SNAPSHOT</version>\r\n\r\n    <properties>\r\n        <java.version>21</java.version>\r\n    </properties>\r\n\r\n    <dependencies>\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-web</artifactId>\r\n        </dependency>\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-data-jpa</artifactId>\r\n        </dependency>\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-validation</artifactId>\r\n        </dependency>\r\n        <dependency>\r\n            <groupId>com.mysql</groupId>\r\n            <artifactId>mysql-connector-j</artifactId>\r\n            <scope>runtime</scope>\r\n        </dependency>\r\n        <dependency>\r\n            <groupId>org.projectlombok</groupId>\r\n            <artifactId>lombok</artifactId>\r\n            <optional>true</optional>\r\n        </dependency>\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-test</artifactId>\r\n            <scope>test</scope>\r\n        </dependency>\r\n        <dependency>\r\n            <groupId>org.springdoc</groupId>\r\n            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>\r\n            <version>3.0.0</version>\r\n        </dependency>\r\n\r\n    </dependencies>\r\n\r\n    <build>\r\n        <plugins>\r\n            <plugin>\r\n                <groupId>org.springframework.boot</groupId>\r\n                <artifactId>spring-boot-maven-plugin</artifactId>\r\n                <configuration>\r\n                    <excludes>\r\n                        <exclude>\r\n                            <groupId>org.projectlombok</groupId>\r\n                            <artifactId>lombok</artifactId>\r\n                        </exclude>\r\n                    </excludes>\r\n                </configuration>\r\n            </plugin>\r\n        </plugins>\r\n    </build>\r\n</project>
+===================================================================
+diff --git a/customer-services/pom.xml b/customer-services/pom.xml
+--- a/customer-services/pom.xml	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/customer-services/pom.xml	(date 1777974932783)
+@@ -16,6 +16,7 @@
+ 
+     <properties>
+         <java.version>21</java.version>
++        <spring-cloud.version>2023.0.1</spring-cloud.version>
+     </properties>
+ 
+     <dependencies>
+@@ -51,9 +52,61 @@
+             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+             <version>3.0.0</version>
+         </dependency>
++
++        <!-- Spring Cloud Eureka (Service Discovery) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
++        </dependency>
++
++        <!-- Spring Cloud OpenFeign (Declarative REST Client) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-openfeign</artifactId>
++        </dependency>
++
++        <!-- Spring Cloud LoadBalancer (Client-side load balancing) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
++        </dependency>
++
++        <!-- Resilience4j (Fault tolerance: Circuit Breaker, Retry, Timeout) -->
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-spring-boot3</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-circuitbreaker</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-retry</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-timelimiter</artifactId>
++            <version>2.1.0</version>
++        </dependency>
+ 
+     </dependencies>
+ 
++    <dependencyManagement>
++        <dependencies>
++            <dependency>
++                <groupId>org.springframework.cloud</groupId>
++                <artifactId>spring-cloud-dependencies</artifactId>
++                <version>${spring-cloud.version}</version>
++                <type>pom</type>
++                <scope>import</scope>
++            </dependency>
++        </dependencies>
++    </dependencyManagement>
++
+     <build>
+         <plugins>
+             <plugin>
+Index: loan-service/src/main/resources/application.yaml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>server:\r\n  port: 8085\r\n\r\nspring:\r\n  application:\r\n    name: loan-service\r\n\r\n  datasource:\r\n    url: jdbc:mysql://localhost:3306/banking_db?useSSL=false&serverTimezone=UTC\r\n    username: root\r\n    password: 23092005\r\n    driver-class-name: com.mysql.cj.jdbc.Driver\r\n\r\n  jpa:\r\n    hibernate:\r\n      ddl-auto: create   # create/update tables automatically\r\n    show-sql: true\r\n    properties:\r\n      hibernate:\r\n        format_sql: true\r\n\r\n  jackson:\r\n    default-property-inclusion: non_null\r\n\r\n# \uD83D\uDD17 Eureka (Service Registry)\r\n#eureka:\r\n#  client:\r\n#    service-url:\r\n#      defaultZone: http://localhost:8761/eureka\r\n#  instance:\r\n#    prefer-ip-address: true\r\n\r\n# \uD83D\uDD25 Feign (future use)\r\nfeign:\r\n  client:\r\n    config:\r\n      default:\r\n        connectTimeout: 5000\r\n        readTimeout: 5000\r\n\r\n# \uD83D\uDD0D Logging (optional but useful)\r\n#logging:\r\n#  level:\r\n#    org.hibernate.SQL: DEBUG\r\n#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE\r\n\r\n# \uD83D\uDD10 Actuator (health check)\r\nmanagement:\r\n  endpoints:\r\n    web:\r\n      exposure:\r\n        include: health,info
+===================================================================
+diff --git a/loan-service/src/main/resources/application.yaml b/loan-service/src/main/resources/application.yaml
+--- a/loan-service/src/main/resources/application.yaml	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/loan-service/src/main/resources/application.yaml	(date 1777975033425)
+@@ -22,15 +22,19 @@
+   jackson:
+     default-property-inclusion: non_null
+ 
+-# 🔗 Eureka (Service Registry)
+-#eureka:
+-#  client:
+-#    service-url:
+-#      defaultZone: http://localhost:8761/eureka
+-#  instance:
+-#    prefer-ip-address: true
++# Eureka Client Configuration
++eureka:
++  instance:
++    hostname: localhost
++    instance-id: ${spring.application.name}:${server.port}
++    prefer-ip-address: false
++  client:
++    register-with-eureka: true
++    fetch-registry: true
++    service-url:
++      defaultZone: http://localhost:8761/eureka/
+ 
+-# 🔥 Feign (future use)
++# Feign Client Configuration
+ feign:
+   client:
+     config:
+@@ -38,15 +42,47 @@
+         connectTimeout: 5000
+         readTimeout: 5000
+ 
+-# 🔍 Logging (optional but useful)
+-#logging:
+-#  level:
+-#    org.hibernate.SQL: DEBUG
+-#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
++# Resilience4j Configuration
++resilience4j:
++  circuitbreaker:
++    instances:
++      account-service:
++        registerHealthIndicator: true
++        slidingWindowSize: 10
++        minimumNumberOfCalls: 5
++        permittedNumberOfCallsInHalfOpenState: 2
++        failureRateThreshold: 50
++        waitDurationInOpenState: 10000
++        slowCallRateThreshold: 50
++        slowCallDurationThreshold: 2000
++      customer-service:
++        registerHealthIndicator: true
++        slidingWindowSize: 10
++        minimumNumberOfCalls: 5
++        permittedNumberOfCallsInHalfOpenState: 2
++        failureRateThreshold: 50
++        waitDurationInOpenState: 10000
++  retry:
++    instances:
++      account-service:
++        maxAttempts: 3
++        waitDuration: 1000
++      customer-service:
++        maxAttempts: 3
++        waitDuration: 1000
++  timelimiter:
++    instances:
++      account-service:
++        timeoutDuration: 5000
++      customer-service:
++        timeoutDuration: 5000
+ 
+-# 🔐 Actuator (health check)
++# Actuator for health checks
+ management:
+   endpoints:
+     web:
+       exposure:
+-        include: health,info
+\ No newline at end of file
++        include: health,info
++  endpoint:
++    health:
++      show-details: always
+Index: customer-services/src/main/resources/application.yaml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>server:\r\n  port: 8081\r\n\r\nspring:\r\n\r\n  application:\r\n    name: customer-service\r\n\r\n  datasource:\r\n    url: jdbc:mysql://localhost:3306/customer_db\r\n    username: root\r\n    password: 23092005\r\n\r\n  jpa:\r\n    hibernate:\r\n      ddl-auto: update\r\n    show-sql: true
+===================================================================
+diff --git a/customer-services/src/main/resources/application.yaml b/customer-services/src/main/resources/application.yaml
+--- a/customer-services/src/main/resources/application.yaml	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/customer-services/src/main/resources/application.yaml	(date 1777975252884)
+@@ -14,4 +14,47 @@
+   jpa:
+     hibernate:
+       ddl-auto: update
+-    show-sql: true
+\ No newline at end of file
++    show-sql: true
++
++# Eureka Client Configuration
++eureka:
++  instance:
++    hostname: localhost
++    instance-id: ${spring.application.name}:${server.port}
++    prefer-ip-address: false
++  client:
++    register-with-eureka: true
++    fetch-registry: true
++    service-url:
++      defaultZone: http://localhost:8761/eureka/
++
++# Actuator for health checks
++management:
++  endpoints:
++    web:
++      exposure:
++        include: health,info
++  endpoint:
++    health:
++      show-details: always
++
++# Resilience4j Configuration
++resilience4j:
++  circuitbreaker:
++    instances:
++      branch-service:
++        registerHealthIndicator: true
++        slidingWindowSize: 10
++        minimumNumberOfCalls: 5
++        permittedNumberOfCallsInHalfOpenState: 2
++        failureRateThreshold: 50
++        waitDurationInOpenState: 10000
++  retry:
++    instances:
++      branch-service:
++        maxAttempts: 3
++        waitDuration: 1000
++  timelimiter:
++    instances:
++      branch-service:
++        timeoutDuration: 5000
+Index: Account-service/pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\r\n    <modelVersion>4.0.0</modelVersion>\r\n    <parent>\r\n        <groupId>org.springframework.boot</groupId>\r\n        <artifactId>spring-boot-starter-parent</artifactId>\r\n        <version>3.4.1</version>\r\n        <relativePath/> <!-- lookup parent from repository -->\r\n    </parent>\r\n    <groupId>com.cts</groupId>\r\n    <artifactId>Account-service</artifactId>\r\n    <version>0.0.1-SNAPSHOT</version>\r\n    <name>Account-service</name>\r\n    <description>Account-service</description>\r\n    <url/>\r\n    <licenses>\r\n        <license/>\r\n    </licenses>\r\n    <developers>\r\n        <developer/>\r\n    </developers>\r\n    <scm>\r\n        <connection/>\r\n        <developerConnection/>\r\n        <tag/>\r\n        <url/>\r\n    </scm>\r\n    <properties>\r\n        <java.version>21</java.version>\r\n    </properties>\r\n    <dependencies>\r\n        <!-- Web -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-web</artifactId>\r\n        </dependency>\r\n\r\n        <!-- JPA -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-data-jpa</artifactId>\r\n        </dependency>\r\n\r\n        <!-- Security -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-security</artifactId>\r\n        </dependency>\r\n\r\n        <!-- Validation -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-validation</artifactId>\r\n        </dependency>\r\n\r\n        <!-- MySQL -->\r\n        <dependency>\r\n            <groupId>com.mysql</groupId>\r\n            <artifactId>mysql-connector-j</artifactId>\r\n            <scope>runtime</scope>\r\n        </dependency>\r\n\r\n        <!-- Lombok -->\r\n        <dependency>\r\n            <groupId>org.projectlombok</groupId>\r\n            <artifactId>lombok</artifactId>\r\n            <optional>true</optional>\r\n        </dependency>\r\n\r\n        <!-- JWT -->\r\n        <dependency>\r\n            <groupId>io.jsonwebtoken</groupId>\r\n            <artifactId>jjwt-api</artifactId>\r\n            <version>0.12.6</version>\r\n        </dependency>\r\n        <dependency>\r\n            <groupId>io.jsonwebtoken</groupId>\r\n            <artifactId>jjwt-impl</artifactId>\r\n            <version>0.12.6</version>\r\n            <scope>runtime</scope>\r\n        </dependency>\r\n        <dependency>\r\n            <groupId>io.jsonwebtoken</groupId>\r\n            <artifactId>jjwt-jackson</artifactId>\r\n            <version>0.12.6</version>\r\n            <scope>runtime</scope>\r\n        </dependency>\r\n\r\n        <!-- OpenAPI / Swagger -->\r\n        <dependency>\r\n            <groupId>org.springdoc</groupId>\r\n            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>\r\n            <version>2.8.4</version>\r\n        </dependency>\r\n\r\n        <!-- WebFlux (for future WebClient inter-service calls) -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-webflux</artifactId>\r\n        </dependency>\r\n\r\n        <!-- Test -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-test</artifactId>\r\n            <scope>test</scope>\r\n        </dependency>\r\n        <dependency>\r\n            <groupId>org.springframework.security</groupId>\r\n            <artifactId>spring-security-test</artifactId>\r\n            <scope>test</scope>\r\n        </dependency>\r\n    </dependencies>\r\n\r\n    <build>\r\n        <plugins>\r\n            <plugin>\r\n                <groupId>org.springframework.boot</groupId>\r\n                <artifactId>spring-boot-maven-plugin</artifactId>\r\n            </plugin>\r\n        </plugins>\r\n    </build>\r\n\r\n</project>\r\n
+===================================================================
+diff --git a/Account-service/pom.xml b/Account-service/pom.xml
+--- a/Account-service/pom.xml	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/Account-service/pom.xml	(date 1777974945021)
+@@ -5,7 +5,7 @@
+     <parent>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-parent</artifactId>
+-        <version>3.4.1</version>
++        <version>4.0.6</version>
+         <relativePath/> <!-- lookup parent from repository -->
+     </parent>
+     <groupId>com.cts</groupId>
+@@ -28,6 +28,7 @@
+     </scm>
+     <properties>
+         <java.version>21</java.version>
++        <spring-cloud.version>2023.0.1</spring-cloud.version>
+     </properties>
+     <dependencies>
+         <!-- Web -->
+@@ -111,8 +112,61 @@
+             <artifactId>spring-security-test</artifactId>
+             <scope>test</scope>
+         </dependency>
++
++        <!-- Spring Cloud Eureka (Service Discovery) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
++        </dependency>
++
++        <!-- Spring Cloud OpenFeign (Declarative REST Client) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-openfeign</artifactId>
++        </dependency>
++
++        <!-- Spring Cloud LoadBalancer (Client-side load balancing) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
++        </dependency>
++
++        <!-- Resilience4j (Fault tolerance: Circuit Breaker, Retry, Timeout) -->
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-spring-boot3</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-circuitbreaker</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-retry</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-timelimiter</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++
+     </dependencies>
+ 
++    <dependencyManagement>
++        <dependencies>
++            <dependency>
++                <groupId>org.springframework.cloud</groupId>
++                <artifactId>spring-cloud-dependencies</artifactId>
++                <version>${spring-cloud.version}</version>
++                <type>pom</type>
++                <scope>import</scope>
++            </dependency>
++        </dependencies>
++    </dependencyManagement>
++
+     <build>
+         <plugins>
+             <plugin>
+Index: Transaction-service/src/main/resources/application.yaml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>spring:\r\n  application:\r\n    name: Transaction-service\r\n  profiles:\r\n    active: dev\r\n  datasource:\r\n    url: jdbc:mysql://localhost:3306/banksphere_transactions?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true\r\n    username: root\r\n    password: root\r\n    driver-class-name: com.mysql.cj.jdbc.Driver\r\n\r\n    # HikariCP — production-grade connection pool\r\n    hikari:\r\n      pool-name: TransactionHikariPool\r\n      minimum-idle: 5\r\n      maximum-pool-size: 20\r\n      idle-timeout: 30000\r\n      connection-timeout: 20000\r\n      max-lifetime: 1800000\r\n      connection-test-query: SELECT 1\r\n\r\n  jpa:\r\n    hibernate:\r\n      ddl-auto: update\r\n    show-sql: false\r\n    open-in-view: false\r\n    properties:\r\n      hibernate:\r\n        dialect: org.hibernate.dialect.MySQLDialect\r\n        format_sql: true\r\n        use_sql_comments: true\r\n        jdbc:\r\n          batch_size: 50\r\n          fetch_size: 100\r\n        order_inserts: true\r\n        order_updates: true\r\n\r\n\r\n  jackson:\r\n    default-property-inclusion: non_null\r\nserver:\r\n  port: 8082\r\n  servlet:\r\n    context-path: /\r\n  shutdown: graceful\r\n  tomcat:\r\n    threads:\r\n      max: 200\r\n      min-spare: 20\r\n    connection-timeout: 5000\r\nlogging:\r\n  level:\r\n    root: INFO\r\n    com.cts.transactionservice: INFO\r\n    org.hibernate.SQL: WARN\r\n    org.springframework.web: WARN\r\n  pattern:\r\n    console: \"%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] %logger{36} - %msg%n\"\r\n    file:    \"%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] %logger{36} - %msg%n\"\r\n  file:\r\n    name: logs/transaction-service.log\r\n\r\nspringdoc:\r\n  api-docs:\r\n    path: /v3/api-docs\r\n    enabled: true\r\n  swagger-ui:\r\n    path: /swagger-ui.html\r\n    enabled: true\r\n    operations-sorter: method\r\n    tags-sorter: alpha\r\n    display-request-duration: true\r\n    filter: true\r\n    try-it-out-enabled: true\r\n  show-actuator: false\r\n  packages-to-scan: com.cts.transactionservice.controller\r\ntransaction:\r\n  limits:\r\n    max-single-amount: 500000.00\r\n    daily-transfer-limit: 1000000.00\r\n    max-daily-count: 50\r\n  stale-pending:\r\n    timeout-minutes: 30\r\n  reference:\r\n    prefix: TXN\r\n    max-generation-attempts: 10\r\n  pagination:\r\n    default-page-size: 20\r\n    max-page-size: 100\r\nspring.lifecycle:\r\n  timeout-per-shutdown-phase: 30s\r\n\r\n---\r\n\r\nspring:\r\n  config:\r\n    activate:\r\n      on-profile: dev\r\n  datasource:\r\n    url: jdbc:mysql://localhost:3306/banksphere_transactions_dev?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true\r\n    username: ${DB_USERNAME:root}\r\n    password: ${DB_PASSWORD:root}\r\n  jpa:\r\n    show-sql: true\r\n    hibernate:\r\n      ddl-auto: update\r\n\r\nlogging:\r\n  level:\r\n    com.cts.transactionservice: DEBUG\r\n    org.hibernate.SQL: DEBUG\r\n    org.hibernate.type.descriptor.sql: TRACE\r\n\r\n---\r\nspring:\r\n  config:\r\n    activate:\r\n      on-profile: prod\r\n  datasource:\r\n    url: ${DB_URL}\r\n    username: ${DB_USERNAME}\r\n    password: ${DB_PASSWORD}\r\n    hikari:\r\n      maximum-pool-size: 50\r\n      minimum-idle: 10\r\n  jpa:\r\n    show-sql: false\r\n    hibernate:\r\n      ddl-auto: validate\r\n\r\nspringdoc:\r\n  api-docs:\r\n    enabled: false\r\n  swagger-ui:\r\n    enabled: false\r\n\r\nlogging:\r\n  level:\r\n    root: WARN\r\n    com.cts.transactionservice: INFO\r\n
+===================================================================
+diff --git a/Transaction-service/src/main/resources/application.yaml b/Transaction-service/src/main/resources/application.yaml
+--- a/Transaction-service/src/main/resources/application.yaml	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/Transaction-service/src/main/resources/application.yaml	(date 1777975145918)
+@@ -87,6 +87,38 @@
+   pagination:
+     default-page-size: 20
+     max-page-size: 100
++
++# Feign Client Configuration
++feign:
++  client:
++    config:
++      default:
++        connectTimeout: 5000
++        readTimeout: 5000
++
++# Resilience4j Configuration
++resilience4j:
++  circuitbreaker:
++    instances:
++      account-service:
++        registerHealthIndicator: true
++        slidingWindowSize: 10
++        minimumNumberOfCalls: 5
++        permittedNumberOfCallsInHalfOpenState: 2
++        failureRateThreshold: 50
++        waitDurationInOpenState: 10000
++        slowCallRateThreshold: 50
++        slowCallDurationThreshold: 2000
++  retry:
++    instances:
++      account-service:
++        maxAttempts: 3
++        waitDuration: 1000
++  timelimiter:
++    instances:
++      account-service:
++        timeoutDuration: 5000
++
+ spring.lifecycle:
+   timeout-per-shutdown-phase: 30s
+ 
+@@ -138,3 +170,25 @@
+   level:
+     root: WARN
+     com.cts.transactionservice: INFO
++
++# Eureka Client Configuration
++eureka:
++  instance:
++    hostname: localhost
++    instance-id: ${spring.application.name}:${server.port}
++    prefer-ip-address: false
++  client:
++    register-with-eureka: true
++    fetch-registry: true
++    service-url:
++      defaultZone: http://localhost:8761/eureka/
++
++# Actuator for health checks
++management:
++  endpoints:
++    web:
++      exposure:
++        include: health,info
++  endpoint:
++    health:
++      show-details: always
+Index: loan-service/src/main/java/com/cts/loanservice/LoanServiceApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cts.loanservice;\r\n\r\nimport org.springframework.boot.SpringApplication;\r\nimport org.springframework.boot.autoconfigure.SpringBootApplication;\r\n\r\n@SpringBootApplication\r\npublic class LoanServiceApplication {\r\n\r\n    public static void main(String[] args) {\r\n        SpringApplication.run(LoanServiceApplication.class, args);\r\n    }\r\n\r\n}\r\n
+===================================================================
+diff --git a/loan-service/src/main/java/com/cts/loanservice/LoanServiceApplication.java b/loan-service/src/main/java/com/cts/loanservice/LoanServiceApplication.java
+--- a/loan-service/src/main/java/com/cts/loanservice/LoanServiceApplication.java	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/loan-service/src/main/java/com/cts/loanservice/LoanServiceApplication.java	(date 1777975073814)
+@@ -2,8 +2,12 @@
+ 
+ import org.springframework.boot.SpringApplication;
+ import org.springframework.boot.autoconfigure.SpringBootApplication;
++import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
++import org.springframework.cloud.openfeign.EnableFeignClients;
+ 
+ @SpringBootApplication
++@EnableDiscoveryClient
++@EnableFeignClients
+ public class LoanServiceApplication {
+ 
+     public static void main(String[] args) {
+Index: Account-service/src/main/resources/application.yaml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>spring:\r\n  application:\r\n    name: account-service\r\n\r\n  datasource:\r\n    url: jdbc:mysql://localhost:3306/account_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true\r\n    username: root\r\n    password: Vidya@123\r\n    driver-class-name: com.mysql.cj.jdbc.Driver\r\n\r\n  jpa:\r\n    hibernate:\r\n      ddl-auto: update\r\n    show-sql: true\r\n    properties:\r\n      hibernate:\r\n        dialect: org.hibernate.dialect.MySQLDialect\r\n        format_sql: true\r\n\r\nserver:\r\n  port: 8083\r\n\r\n# JWT configuration\r\njwt:\r\n  secret: YmFua3NwaGVyZS1zZWNyZXQta2V5LWZvci1qd3QtdG9rZW4tZ2VuZXJhdGlvbi0yMDI2\r\n\r\n# High-value transaction threshold\r\nbanking:\r\n  high-value-threshold: 100000.00\r\n\r\n# Logging\r\nlogging:\r\n  level:\r\n    com.cts.accountservice: DEBUG\r\n    org.springframework.security: DEBUG\r\n  pattern:\r\n    console: \"%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n\"\r\n\r\n# Swagger\r\nspringdoc:\r\n  api-docs:\r\n    path: /v3/api-docs\r\n  swagger-ui:\r\n    path: /swagger-ui.html\r\n
+===================================================================
+diff --git a/Account-service/src/main/resources/application.yaml b/Account-service/src/main/resources/application.yaml
+--- a/Account-service/src/main/resources/application.yaml	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/Account-service/src/main/resources/application.yaml	(date 1777975131876)
+@@ -42,3 +42,48 @@
+     path: /v3/api-docs
+   swagger-ui:
+     path: /swagger-ui.html
++
++# Eureka Client Configuration
++eureka:
++  instance:
++    hostname: localhost
++    instance-id: ${spring.application.name}:${server.port}
++    prefer-ip-address: false
++  client:
++    register-with-eureka: true
++    fetch-registry: true
++    service-url:
++      defaultZone: http://localhost:8761/eureka/
++
++# Actuator for health checks
++management:
++  endpoints:
++    web:
++      exposure:
++        include: health,info
++  endpoint:
++    health:
++      show-details: always
++
++# Resilience4j Configuration
++resilience4j:
++  circuitbreaker:
++    instances:
++      customer-service:
++        registerHealthIndicator: true
++        slidingWindowSize: 10
++        minimumNumberOfCalls: 5
++        permittedNumberOfCallsInHalfOpenState: 2
++        failureRateThreshold: 50
++        waitDurationInOpenState: 10000
++        slowCallRateThreshold: 50
++        slowCallDurationThreshold: 2000
++  retry:
++    instances:
++      customer-service:
++        maxAttempts: 3
++        waitDuration: 1000
++  timelimiter:
++    instances:
++      customer-service:
++        timeoutDuration: 5000
+Index: customer-services/src/main/java/com/cts/customerservices/CustomerServicesApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cts.customerservices;\r\n\r\nimport org.springframework.boot.SpringApplication;\r\nimport org.springframework.boot.autoconfigure.SpringBootApplication;\r\n\r\n@SpringBootApplication\r\npublic class CustomerServicesApplication {\r\n\r\n    public static void main(String[] args) {\r\n        SpringApplication.run(CustomerServicesApplication.class, args);\r\n    }\r\n\r\n}\r\n
+===================================================================
+diff --git a/customer-services/src/main/java/com/cts/customerservices/CustomerServicesApplication.java b/customer-services/src/main/java/com/cts/customerservices/CustomerServicesApplication.java
+--- a/customer-services/src/main/java/com/cts/customerservices/CustomerServicesApplication.java	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/customer-services/src/main/java/com/cts/customerservices/CustomerServicesApplication.java	(date 1777975047782)
+@@ -2,8 +2,12 @@
+ 
+ import org.springframework.boot.SpringApplication;
+ import org.springframework.boot.autoconfigure.SpringBootApplication;
++import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
++import org.springframework.cloud.openfeign.EnableFeignClients;
+ 
+ @SpringBootApplication
++@EnableDiscoveryClient
++@EnableFeignClients
+ public class CustomerServicesApplication {
+ 
+     public static void main(String[] args) {
+Index: identity-services/src/main/java/com/cts/identityservices/IdentityServicesApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cts.identityservices;\r\n\r\nimport org.springframework.boot.SpringApplication;\r\nimport org.springframework.boot.autoconfigure.SpringBootApplication;\r\n\r\n@SpringBootApplication\r\npublic class IdentityServicesApplication {\r\n\r\n    public static void main(String[] args) {\r\n        SpringApplication.run(IdentityServicesApplication.class, args);\r\n    }\r\n\r\n}\r\n
+===================================================================
+diff --git a/identity-services/src/main/java/com/cts/identityservices/IdentityServicesApplication.java b/identity-services/src/main/java/com/cts/identityservices/IdentityServicesApplication.java
+--- a/identity-services/src/main/java/com/cts/identityservices/IdentityServicesApplication.java	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/identity-services/src/main/java/com/cts/identityservices/IdentityServicesApplication.java	(date 1777975083571)
+@@ -2,8 +2,12 @@
+ 
+ import org.springframework.boot.SpringApplication;
+ import org.springframework.boot.autoconfigure.SpringBootApplication;
++import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
++import org.springframework.cloud.openfeign.EnableFeignClients;
+ 
+ @SpringBootApplication
++@EnableDiscoveryClient
++@EnableFeignClients
+ public class IdentityServicesApplication {
+ 
+     public static void main(String[] args) {
+Index: .idea/vcs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"VcsDirectoryMappings\">\r\n    <mapping directory=\"\" vcs=\"Git\" />\r\n    <mapping directory=\"$PROJECT_DIR$\" vcs=\"Git\" />\r\n  </component>\r\n</project>
+===================================================================
+diff --git a/.idea/vcs.xml b/.idea/vcs.xml
+--- a/.idea/vcs.xml	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/.idea/vcs.xml	(date 1777974810881)
+@@ -2,6 +2,5 @@
+ <project version="4">
+   <component name="VcsDirectoryMappings">
+     <mapping directory="" vcs="Git" />
+-    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"ExternalStorageConfigurationManager\" enabled=\"true\" />\r\n  <component name=\"MavenProjectsManager\">\r\n    <option name=\"originalFiles\">\r\n      <list>\r\n        <option value=\"$PROJECT_DIR$/Transaction-service/pom.xml\" />\r\n        <option value=\"$PROJECT_DIR$/customer-services/pom.xml\" />\r\n        <option value=\"$PROJECT_DIR$/identity-services/pom.xml\" />\r\n        <option value=\"$PROJECT_DIR$/Account-service/pom.xml\" />\r\n        <option value=\"$PROJECT_DIR$/loan-service/pom.xml\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"ProjectRootManager\" version=\"2\" languageLevel=\"JDK_21\" default=\"true\" project-jdk-name=\"21\" project-jdk-type=\"JavaSDK\">\r\n    <output url=\"file://$PROJECT_DIR$/out\" />\r\n  </component>\r\n</project>
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/.idea/misc.xml	(date 1777974810822)
+@@ -4,11 +4,11 @@
+   <component name="MavenProjectsManager">
+     <option name="originalFiles">
+       <list>
+-        <option value="$PROJECT_DIR$/Transaction-service/pom.xml" />
++        <option value="$PROJECT_DIR$/Account-service/pom.xml" />
+         <option value="$PROJECT_DIR$/customer-services/pom.xml" />
+         <option value="$PROJECT_DIR$/identity-services/pom.xml" />
+-        <option value="$PROJECT_DIR$/Account-service/pom.xml" />
+         <option value="$PROJECT_DIR$/loan-service/pom.xml" />
++        <option value="$PROJECT_DIR$/Transaction-service/pom.xml" />
+       </list>
+     </option>
+   </component>
+Index: Transaction-service/pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\r\n    <modelVersion>4.0.0</modelVersion>\r\n    <parent>\r\n        <groupId>org.springframework.boot</groupId>\r\n        <artifactId>spring-boot-starter-parent</artifactId>\r\n        <version>4.0.6</version>\r\n        <relativePath/> <!-- lookup parent from repository -->\r\n    </parent>\r\n    <groupId>com.cts</groupId>\r\n    <artifactId>Transaction-service</artifactId>\r\n    <version>0.0.1-SNAPSHOT</version>\r\n    <name>Transaction-service</name>\r\n    <description>Transaction-service</description>\r\n    <url/>\r\n    <licenses>\r\n        <license/>\r\n    </licenses>\r\n    <developers>\r\n        <developer/>\r\n    </developers>\r\n    <scm>\r\n        <connection/>\r\n        <developerConnection/>\r\n        <tag/>\r\n        <url/>\r\n    </scm>\r\n    <properties>\r\n        <java.version>21</java.version>\r\n    </properties>\r\n    <dependencies>\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter</artifactId>\r\n        </dependency>\r\n\r\n        <!-- Spring Web -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-web</artifactId>\r\n        </dependency>\r\n\r\n        <!-- Spring Data JPA -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-data-jpa</artifactId>\r\n        </dependency>\r\n\r\n        <!-- Validation -->\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-validation</artifactId>\r\n        </dependency>\r\n\r\n        <!-- Lombok -->\r\n        <dependency>\r\n            <groupId>org.projectlombok</groupId>\r\n            <artifactId>lombok</artifactId>\r\n            <optional>true</optional>\r\n        </dependency>\r\n\r\n        <!-- MySQL Driver -->\r\n        <dependency>\r\n            <groupId>com.mysql</groupId>\r\n            <artifactId>mysql-connector-j</artifactId>\r\n            <scope>runtime</scope>\r\n        </dependency>\r\n\r\n        <!-- H2 In-Memory DB for unit tests -->\r\n        <dependency>\r\n            <groupId>com.h2database</groupId>\r\n            <artifactId>h2</artifactId>\r\n            <scope>test</scope>\r\n        </dependency>\r\n\r\n        <dependency>\r\n            <groupId>org.springframework.boot</groupId>\r\n            <artifactId>spring-boot-starter-test</artifactId>\r\n            <scope>test</scope>\r\n        </dependency>\r\n\r\n        <!-- SpringDoc OpenAPI — Swagger UI for Spring Boot 3/4 -->\r\n        <dependency>\r\n            <groupId>org.springdoc</groupId>\r\n            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>\r\n            <version>2.8.8</version>\r\n        </dependency>\r\n\r\n        <!-- Jackson JavaTimeModule — LocalDate/LocalDateTime serialisation support -->\r\n        <dependency>\r\n            <groupId>com.fasterxml.jackson.datatype</groupId>\r\n            <artifactId>jackson-datatype-jsr310</artifactId>\r\n        </dependency>\r\n    </dependencies>\r\n\r\n    <build>\r\n        <plugins>\r\n            <plugin>\r\n                <groupId>org.springframework.boot</groupId>\r\n                <artifactId>spring-boot-maven-plugin</artifactId>\r\n            </plugin>\r\n        </plugins>\r\n    </build>\r\n\r\n</project>\r\n
+===================================================================
+diff --git a/Transaction-service/pom.xml b/Transaction-service/pom.xml
+--- a/Transaction-service/pom.xml	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/Transaction-service/pom.xml	(date 1777974953651)
+@@ -28,6 +28,7 @@
+     </scm>
+     <properties>
+         <java.version>21</java.version>
++        <spring-cloud.version>2023.0.1</spring-cloud.version>
+     </properties>
+     <dependencies>
+         <dependency>
+@@ -92,8 +93,61 @@
+             <groupId>com.fasterxml.jackson.datatype</groupId>
+             <artifactId>jackson-datatype-jsr310</artifactId>
+         </dependency>
++
++        <!-- Spring Cloud Eureka (Service Discovery) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
++        </dependency>
++
++        <!-- Spring Cloud OpenFeign (Declarative REST Client) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-openfeign</artifactId>
++        </dependency>
++
++        <!-- Spring Cloud LoadBalancer (Client-side load balancing) -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
++        </dependency>
++
++        <!-- Resilience4j (Fault tolerance: Circuit Breaker, Retry, Timeout) -->
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-spring-boot3</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-circuitbreaker</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-retry</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.github.resilience4j</groupId>
++            <artifactId>resilience4j-timelimiter</artifactId>
++            <version>2.1.0</version>
++        </dependency>
++
+     </dependencies>
+ 
++    <dependencyManagement>
++        <dependencies>
++            <dependency>
++                <groupId>org.springframework.cloud</groupId>
++                <artifactId>spring-cloud-dependencies</artifactId>
++                <version>${spring-cloud.version}</version>
++                <type>pom</type>
++                <scope>import</scope>
++            </dependency>
++        </dependencies>
++    </dependencyManagement>
++
+     <build>
+         <plugins>
+             <plugin>
+Index: identity-services/src/main/resources/application.yaml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\r\nserver:\r\n  port: 8081\r\n\r\nspring:\r\n  datasource:\r\n    url: jdbc:mysql://localhost:3306/identity_db\r\n    username: root\r\n    password: Vidya@123\r\n\r\n  jpa:\r\n    hibernate:\r\n      ddl-auto: create\r\n    show-sql: true\r\n\r\n\r\n
+===================================================================
+diff --git a/identity-services/src/main/resources/application.yaml b/identity-services/src/main/resources/application.yaml
+--- a/identity-services/src/main/resources/application.yaml	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/identity-services/src/main/resources/application.yaml	(date 1777975039973)
+@@ -1,8 +1,11 @@
+ 
+ server:
+-  port: 8081
++  port: 8084
+ 
+ spring:
++  application:
++    name: identity-service
++
+   datasource:
+     url: jdbc:mysql://localhost:3306/identity_db
+     username: root
+@@ -13,4 +16,24 @@
+       ddl-auto: create
+     show-sql: true
+ 
++# Eureka Client Configuration
++eureka:
++  instance:
++    hostname: localhost
++    instance-id: ${spring.application.name}:${server.port}
++    prefer-ip-address: false
++  client:
++    register-with-eureka: true
++    fetch-registry: true
++    service-url:
++      defaultZone: http://localhost:8761/eureka/
+ 
++# Actuator for health checks
++management:
++  endpoints:
++    web:
++      exposure:
++        include: health,info
++  endpoint:
++    health:
++      show-details: always
+Index: .idea/compiler.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"CompilerConfiguration\">\r\n    <annotationProcessing>\r\n      <profile default=\"true\" name=\"Default\" enabled=\"true\" />\r\n      <profile name=\"Maven default annotation processors profile\" enabled=\"true\">\r\n        <sourceOutputDir name=\"target/generated-sources/annotations\" />\r\n        <sourceTestOutputDir name=\"target/generated-test-sources/test-annotations\" />\r\n        <outputRelativeToContentRoot value=\"true\" />\r\n        <module name=\"identity-services\" />\r\n        <module name=\"Account-service\" />\r\n        <module name=\"Transaction-service\" />\r\n        <module name=\"customer-services\" />\r\n        <module name=\"customer-services (1)\" />\r\n      </profile>\r\n    </annotationProcessing>\r\n    <bytecodeTargetLevel>\r\n      <module name=\"loan-service\" target=\"21\" />\r\n    </bytecodeTargetLevel>\r\n  </component>\r\n  <component name=\"JavacSettings\">\r\n    <option name=\"ADDITIONAL_OPTIONS_OVERRIDE\">\r\n      <module name=\"Account-service\" options=\"-parameters\" />\r\n      <module name=\"Transaction-service\" options=\"-parameters\" />\r\n      <module name=\"customer-services\" options=\"-parameters\" />\r\n      <module name=\"customer-services (1)\" options=\"-parameters\" />\r\n      <module name=\"identity-services\" options=\"-parameters\" />\r\n    </option>\r\n  </component>\r\n</project>
+===================================================================
+diff --git a/.idea/compiler.xml b/.idea/compiler.xml
+--- a/.idea/compiler.xml	(revision d6a63860c1c672d66b434ce12994dfd8cce78942)
++++ b/.idea/compiler.xml	(date 1777974810851)
+@@ -2,29 +2,25 @@
+ <project version="4">
+   <component name="CompilerConfiguration">
+     <annotationProcessing>
+-      <profile default="true" name="Default" enabled="true" />
+       <profile name="Maven default annotation processors profile" enabled="true">
+         <sourceOutputDir name="target/generated-sources/annotations" />
+         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+         <outputRelativeToContentRoot value="true" />
+-        <module name="identity-services" />
+         <module name="Account-service" />
++        <module name="identity-services" />
++        <module name="loan-services" />
+         <module name="Transaction-service" />
+         <module name="customer-services" />
+-        <module name="customer-services (1)" />
+       </profile>
+     </annotationProcessing>
+-    <bytecodeTargetLevel>
+-      <module name="loan-service" target="21" />
+-    </bytecodeTargetLevel>
+   </component>
+   <component name="JavacSettings">
+     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+       <module name="Account-service" options="-parameters" />
+       <module name="Transaction-service" options="-parameters" />
+       <module name="customer-services" options="-parameters" />
+-      <module name="customer-services (1)" options="-parameters" />
+       <module name="identity-services" options="-parameters" />
++      <module name="loan-services" options="-parameters" />
+     </option>
+   </component>
+ </project>
+\ No newline at end of file

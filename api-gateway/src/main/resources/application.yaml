@@ -1,0 +1,154 @@
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      # Enable discovery client lookup
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      # Explicit route definitions
+      routes:
+        # Customer Service routes
+        - id: customer-service
+          uri: lb://customer-service
+          predicates:
+            - Path=/customers/**,/api/v1/customers/**
+          filters:
+            - RewritePath=/customers(?<segment>/?.*), /customers$\{segment}
+            - CircuitBreaker=customerServiceCB
+          metadata:
+            service: customer-service
+
+        # Account Service routes
+        - id: account-service
+          uri: lb://account-service
+          predicates:
+            - Path=/accounts/**,/api/v1/accounts/**
+          filters:
+            - RewritePath=/accounts(?<segment>/?.*), /api/v1/accounts$\{segment}
+            - CircuitBreaker=accountServiceCB
+          metadata:
+            service: account-service
+
+        # Transaction Service routes
+        - id: transaction-service
+          uri: lb://transaction-service
+          predicates:
+            - Path=/transactions/**,/api/v1/transactions/**
+          filters:
+            - RewritePath=/transactions(?<segment>/?.*), /api/v1/transactions$\{segment}
+            - CircuitBreaker=transactionServiceCB
+          metadata:
+            service: transaction-service
+
+        # Loan Service routes
+        - id: loan-service
+          uri: lb://loan-service
+          predicates:
+            - Path=/loans/**
+          filters:
+            - RewritePath=/loans(?<segment>/?.*), /loans$\{segment}
+            - CircuitBreaker=loanServiceCB
+          metadata:
+            service: loan-service
+
+        # Identity Service (Auth) routes
+        - id: identity-service
+          uri: lb://identity-service
+          predicates:
+            - Path=/auth/**
+          filters:
+            - RewritePath=/auth(?<segment>/?.*), /auth$\{segment}
+            - CircuitBreaker=identityServiceCB
+          metadata:
+            service: identity-service
+
+      # Global CORS configuration
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: false
+            maxAge: 3600
+
+server:
+  port: 8080
+
+# Eureka Client Configuration
+eureka:
+  instance:
+    hostname: localhost
+    instance-id: ${spring.application.name}:${server.port}
+    prefer-ip-address: false
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+# Resilience4j Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      customerServiceCB:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 2
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+      accountServiceCB:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 2
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+      transactionServiceCB:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 2
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+      loanServiceCB:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 2
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+      identityServiceCB:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 2
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+
+# Logging
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web: WARN
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers,circuitbreaker-events
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
