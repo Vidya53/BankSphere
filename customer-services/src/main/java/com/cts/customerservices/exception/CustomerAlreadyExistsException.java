@@ -1,4 +1,14 @@
 package com.cts.customerservices.exception;
 
-public class CustomerAlreadyExistsException {
+public class CustomerAlreadyExistsException
+        extends RuntimeException {
+
+    public CustomerAlreadyExistsException(
+            String message
+    ) {
+
+        super(message);
+
+    }
+
 }
