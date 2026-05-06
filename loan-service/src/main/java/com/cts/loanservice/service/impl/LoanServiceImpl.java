@@ -2,6 +2,7 @@ package com.cts.loanservice.service.impl;
 
 import com.cts.loanservice.client.AccountClient;
 import com.cts.loanservice.client.CustomerClient;
+import com.cts.loanservice.client.dto.CustomerApiResponse;
 import com.cts.loanservice.dto.request.*;
 import com.cts.loanservice.dto.response.*;
 import com.cts.loanservice.entity.EmiPayment;
@@ -45,8 +46,10 @@ public class LoanServiceImpl implements LoanService {
     @Transactional
     public LoanResponse applyLoan(LoanApplyRequest req) {
 
-        if (!customerClient.isEligible(req.getCustomerId())) {
-            throw new BusinessException("Customer is not eligible for a loan");
+        CustomerApiResponse customerResponse = customerClient.getCustomerDetails(req.getCustomerId());
+        if (customerResponse == null || customerResponse.getData() == null
+                || !"ACTIVE".equalsIgnoreCase(customerResponse.getData().getStatus())) {
+            throw new BusinessException("Customer is not active or eligible for a loan");
         }
 
         // Validate loan type
@@ -263,12 +266,14 @@ public class LoanServiceImpl implements LoanService {
     @Override
     public EligibilityResponse checkEligibility(EligibilityCheckRequest req) {
 
-        if (!customerClient.isEligible(req.getCustomerId())) {
+        CustomerApiResponse eligibilityCheck = customerClient.getCustomerDetails(req.getCustomerId());
+        if (eligibilityCheck == null || eligibilityCheck.getData() == null
+                || !"ACTIVE".equalsIgnoreCase(eligibilityCheck.getData().getStatus())) {
             return EligibilityResponse.builder()
                     .eligible(false)
                     .requestedAmount(req.getRequestedAmount())
                     .monthlyIncome(req.getMonthlyIncome())
-                    .reason("Customer is not eligible as per KYC/credit check")
+                    .reason("Customer is not active or eligible as per KYC/credit check")
                     .build();
         }
 

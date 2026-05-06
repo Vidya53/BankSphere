@@ -7,11 +7,21 @@ spring:
     name: customer-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/customer_db
+    url: jdbc:mysql://localhost:3306/customer_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root
-    password: 23092005
+    password: root
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}

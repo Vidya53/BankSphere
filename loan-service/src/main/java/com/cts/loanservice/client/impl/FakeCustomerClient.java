@@ -1,12 +1,18 @@
 package com.cts.loanservice.client.impl;
 
 import com.cts.loanservice.client.CustomerClient;
-import org.springframework.stereotype.Component;
+import com.cts.loanservice.client.dto.CustomerApiResponse;
 
-@Component
+// Fake stub kept for reference only — not a Spring bean.
+// Replaced by the CustomerClient Feign client.
 public class FakeCustomerClient implements CustomerClient {
 
-    public boolean isEligible(String customerId) {
-        return true;
+    @Override
+    public CustomerApiResponse getCustomerDetails(String customerNo) {
+        CustomerApiResponse response = new CustomerApiResponse();
+        CustomerApiResponse.CustomerData data = new CustomerApiResponse.CustomerData();
+        data.setStatus("ACTIVE");
+        response.setData(data);
+        return response;
     }
 }

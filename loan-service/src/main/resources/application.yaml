@@ -6,14 +6,14 @@ spring:
     name: loan-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/banking_db?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/loan_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root
-    password: 23092005
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: create   # create/update tables automatically
+      ddl-auto: update   # create/update tables automatically
     show-sql: true
     properties:
       hibernate:
@@ -22,21 +22,64 @@ spring:
   jackson:
     default-property-inclusion: non_null
 
-# 🔗 Eureka (Service Registry)
-#eureka:
-#  client:
-#    service-url:
-#      defaultZone: http://localhost:8761/eureka
-#  instance:
-#    prefer-ip-address: true
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true
+    enabled: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
 
-# 🔥 Feign (future use)
 feign:
+  circuitbreaker:
+    enabled: true
   client:
     config:
       default:
-        connectTimeout: 5000
-        readTimeout: 5000
+        connectTimeout: 3000
+        readTimeout: 3000
+      account-service:
+        url: http://localhost:8081
+      customer-service:
+        url: http://localhost:8082
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 60s
+        permittedNumberOfCallsInHalfOpenState: 3
+    instances:
+      account-service:
+        baseConfig: default
+      customer-service:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 3s
+    instances:
+      account-service:
+        baseConfig: default
+      customer-service:
+        baseConfig: default
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 500ms
+    instances:
+      account-service:
+        baseConfig: default
+      customer-service:
+        baseConfig: default
 
 # 🔍 Logging (optional but useful)
 #logging:
@@ -49,4 +92,161 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics
+
+# 📚 Swagger / OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    use-root-path: false
+    display-request-duration: true
+    docs-url: /v3/api-docs
+  show-actuator: false
+  use-management-port: false
+  cache:
+    disabled: true
+  model-converters:
+    deprecating-converter:
+      enabled: false
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  paths-to-match: /loans/**,/actuator/**
+  paths-to-exclude: /error/**
+
+#
+#server:
+#  port: 8085
+#
+#spring:
+#  application:
+#    name: loan-service
+#
+#  datasource:
+#    url: jdbc:mysql://localhost:3306/loan_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+#    username: root
+#    password: root
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: update        # ✅ safer than create
+#    show-sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
+#
+#  jackson:
+#    default-property-inclusion: non_null
+#
+## =========================
+## EUREKA CONFIG
+## =========================
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka
+#    fetch-registry: true
+#    register-with-eureka: true
+#    enabled: true
+#  instance:
+#    prefer-ip-address: true
+#    instance-id: ${spring.application.name}:${server.port}
+#
+## =========================
+## FEIGN CLIENT CONFIG
+## =========================
+#feign:
+#  circuitbreaker:
+#    enabled: true
+#  client:
+#    config:
+#      default:
+#        connectTimeout: 3000
+#        readTimeout: 3000
+#
+## =========================
+## RESILIENCE4J CONFIG
+## =========================
+#resilience4j:
+#  circuitbreaker:
+#    configs:
+#      default:
+#        slidingWindowSize: 10
+#        failureRateThreshold: 50
+#        waitDurationInOpenState: 60s
+#        permittedNumberOfCallsInHalfOpenState: 3
+#    instances:
+#      account-service:
+#        baseConfig: default
+#      customer-service:
+#        baseConfig: default
+#
+#  timelimiter:
+#    configs:
+#      default:
+#        timeoutDuration: 3s
+#    instances:
+#      account-service:
+#        baseConfig: default
+#      customer-service:
+#        baseConfig: default
+#
+#  retry:
+#    configs:
+#      default:
+#        maxAttempts: 3
+#        waitDuration: 500ms
+#    instances:
+#      account-service:
+#        baseConfig: default
+#      customer-service:
+#        baseConfig: default
+#
+## =========================
+## ACTUATOR
+## =========================
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health,info
+#
+## =========================
+## 🔥 SWAGGER / SPRINGDOC (IMPORTANT)
+## =========================
+#springdoc:
+#  api-docs:
+#    enabled: true
+#    path: /v3/api-docs
+#
+#  swagger-ui:
+#    enabled: true
+#    path: /swagger-ui   # ✅ use index.html automatically
+#
+#  cache:
+#    disabled: true
+#
+#  paths-to-match: /**   # ✅ DO NOT restrict during debugging
+#
+#
+#  server:
+#    error:
+#      include-message: always
+#      include-binding-errors: always
+#      include-exception: true
+#      include-stacktrace: always
+#
+#  debug: true
+#
+#  logging:
+#    level:
+#      root: INFO
+#      org.springframework.web: DEBUG
+#      org.springdoc: DEBUG
+#      org.springframework.boot.autoconfigure: DEBUG
+
+

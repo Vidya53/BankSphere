@@ -1,37 +1,42 @@
 package com.cts.loanservice.exception;
 
 import com.cts.loanservice.util.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@Order(Ordered.LOWEST_PRECEDENCE) // ✅ Let framework handlers run first
 public class GlobalExceptionHandler {
 
     // 🔴 Resource Not Found
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Object>> handleNotFound(ResourceNotFoundException ex) {
-
-        ApiResponse<Object> response = ApiResponse.failure(ex.getMessage());
-
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(
+                ApiResponse.failure(ex.getMessage()),
+                HttpStatus.NOT_FOUND
+        );
     }
 
     // 🔴 Business Exception
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Object>> handleBusiness(BusinessException ex) {
-
-        ApiResponse<Object> response = ApiResponse.failure(ex.getMessage());
-
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(
+                ApiResponse.failure(ex.getMessage()),
+                HttpStatus.BAD_REQUEST
+        );
     }
 
-    // 🔴 Validation Error (@Valid)
+    // 🔴 Validation Errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Object>> handleValidation(MethodArgumentNotValidException ex) {
 
@@ -43,18 +48,28 @@ public class GlobalExceptionHandler {
             errors.put(field, message);
         });
 
-        ApiResponse<Object> response = ApiResponse.failure("Validation Failed", errors);
-
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(
+                ApiResponse.failure("Validation Failed", errors),
+                HttpStatus.BAD_REQUEST
+        );
     }
 
-    // 🔴 Generic Exception
+    // 🔴 Global Exception (Swagger-safe)
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Object>> handleGlobal(Exception ex) {
+    public ResponseEntity<ApiResponse<Object>> handleGlobal(
+            Exception ex,
+            HttpServletRequest request) {
 
-        ApiResponse<Object> response = ApiResponse.failure("Internal Server Error");
+        String path = request.getRequestURI();
 
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        // ✅ DO NOT intercept Swagger / OpenAPI
+        if (path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui")) {
+            throw new RuntimeException(ex);
+        }
+
+        return new ResponseEntity<>(
+                ApiResponse.failure("Internal Server Error"),
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
 }
-

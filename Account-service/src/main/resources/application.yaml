@@ -5,7 +5,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/account_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root
-    password: Vidya@123
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -20,23 +20,61 @@ spring:
 server:
   port: 8083
 
-# JWT configuration
-jwt:
-  secret: YmFua3NwaGVyZS1zZWNyZXQta2V5LWZvci1qd3QtdG9rZW4tZ2VuZXJhdGlvbi0yMDI2
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
 
-# High-value transaction threshold
 banking:
   high-value-threshold: 100000.00
 
-# Logging
+feign:
+  circuitbreaker:
+    enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 3000
+        readTimeout: 3000
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 60s
+        permittedNumberOfCallsInHalfOpenState: 3
+    instances:
+      customer-service:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 3s
+    instances:
+      customer-service:
+        baseConfig: default
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 500ms
+    instances:
+      customer-service:
+        baseConfig: default
+
 logging:
   level:
     com.cts.accountservice: DEBUG
-    org.springframework.security: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
-# Swagger
 springdoc:
   api-docs:
     path: /v3/api-docs

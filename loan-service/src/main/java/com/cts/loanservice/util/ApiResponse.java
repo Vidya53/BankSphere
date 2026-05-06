@@ -1,7 +1,9 @@
 package com.cts.loanservice.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.Hidden;
 
+@Hidden   // ✅ IMPORTANT: Prevents Swagger from introspecting this class
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
 
@@ -20,12 +22,12 @@ public class ApiResponse<T> {
         this.errors = errors;
     }
 
-    // Static success response
+    // ✅ Static success response
     public static <T> ApiResponse<T> success(T data) {
         return new ApiResponse<>(true, "Success", data, null);
     }
 
-    // Static failure response
+    // ✅ Static failure responses
     public static <T> ApiResponse<T> failure(String message, Object errors) {
         return new ApiResponse<>(false, message, null, errors);
     }
