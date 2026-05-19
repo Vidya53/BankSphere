@@ -1,27 +1,18 @@
-server:
-  port: 8081
-
 spring:
-
   application:
     name: customer-service
 
-  datasource:
-    url: jdbc:mysql://localhost:3306/customer_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root
-    password: root
+  # ── Config Server import ──────────────────────────────────────────────────
+  # 'optional:' lets the service start without config-server (dev convenience).
+  # In production, set SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-    fetch-registry: true
-    register-with-eureka: true
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${server.port}
+  cloud:
+    config:
+      fail-fast: false
+      retry:
+        max-attempts: 6
+        initial-interval: 1000
+        max-interval: 2000
+        multiplier: 1.1

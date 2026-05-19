@@ -12,123 +12,241 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/customers")
 @RequiredArgsConstructor
-@Tag(name = "Customer Management", description = "APIs for managing customer lifecycles, statuses, and profiles")
+@PreAuthorize("hasAnyRole('CUSTOMER','CSR','BRANCH_MANAGER','LOAN_OFFICER','ADMIN')")
+@Tag(name = "Customers", description = "Customer registration, profile management, lifecycle status, and loan eligibility evaluation")
 public class CustomerController {
 
     private final CustomerService service;
 
-    /**
-     * Helper method to wrap data into a consistent ApiResponse format.
-     */
-    private <T> ResponseEntity<ApiResponse<T>> buildResponse(T data, String message, HttpStatus status) {
-        ApiResponse<T> response = ApiResponse.<T>builder()
-                .status("SUCCESS")
-                .message(message)
-                .data(data)
-                .timestamp(LocalDateTime.now())
-                .build();
-        return new ResponseEntity<>(response, status);
+    @PostMapping
+    @Operation(
+        summary = "Register a new customer",
+        description = """
+                Creates a customer profile linked to the caller's identity user (via X-User-Id). The
+                profile starts in REGISTERED status and must complete KYC before it can be activated.
+
+                **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN
+                **Side effects:** Persists a new customer row; emits an audit event."""
+    )
+    public ResponseEntity<ApiResponse<CustomerResponseDTO>> registerCustomer(
+            @Valid @RequestBody CustomerRequestDTO request,
+            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.created(service.registerCustomer(request, userId), "Customer registered successfully"));
     }
 
-    @PostMapping
-    @Operation(summary = "Register a new customer", description = "Creates a new customer record in the system and returns the saved details.")
-    public ResponseEntity<ApiResponse<CustomerResponseDTO>> registerCustomer(@Valid @RequestBody CustomerRequestDTO request) {
-        CustomerResponseDTO responseBody = service.registerCustomer(request);
-        return buildResponse(responseBody, "Customer registered successfully", HttpStatus.CREATED);
+    @GetMapping("/me")
+    @Operation(
+        summary = "Get the authenticated user's customer profile",
+        description = """
+                Resolves the caller's customer profile using the X-User-Id header injected by the API
+                gateway. Returns 404 if no profile has been created yet.
+
+                **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
+    public ResponseEntity<ApiResponse<CustomerResponseDTO>> getMyProfile(
+            @RequestHeader("X-User-Id") String userId) {
+        return ResponseEntity.ok(ApiResponse.success(service.getMyProfile(userId), "Profile retrieved successfully"));
+    }
+
+    @PutMapping("/me")
+    @Operation(
+        summary = "Update the authenticated user's customer profile",
+        description = """
+                Updates editable fields on the caller's own customer profile. Identity-sensitive fields
+                (customerNo, userId, status) cannot be modified through this endpoint.
+
+                **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN
+                **Side effects:** Persists the profile update; emits an audit event."""
+    )
+    public ResponseEntity<ApiResponse<CustomerResponseDTO>> updateMyProfile(
+            @Valid @RequestBody CustomerRequestDTO request,
+            @RequestHeader("X-User-Id") String userId) {
+        return ResponseEntity.ok(ApiResponse.success(service.updateMyProfile(userId, request), "Profile updated successfully"));
     }
 
     @GetMapping("/{customerNo}")
-    @Operation(summary = "Get customer by number", description = "Retrieves detailed information for a specific customer using their unique customer number.")
+    @Operation(
+        summary = "Get a customer by customer number",
+        description = """
+                Returns the full customer profile for the given customerNo. Throws if the customer does
+                not exist or is soft-deleted.
+
+                **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
     public ResponseEntity<ApiResponse<CustomerResponseDTO>> getCustomer(@PathVariable String customerNo) {
-        CustomerResponseDTO responseBody = service.getCustomer(customerNo);
-        return buildResponse(responseBody, "Customer retrieved successfully", HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.success(service.getCustomer(customerNo), "Customer retrieved successfully"));
     }
 
     @PutMapping("/{customerNo}")
-    @Operation(summary = "Update customer details", description = "Updates the profile information for an existing customer identified by their customer number.")
+    @Operation(
+        summary = "Update a customer profile by customer number",
+        description = """
+                Staff-grade profile update — used by CSRs and branch managers when assisting a customer.
+                Caller must satisfy the class-level role check.
+
+                **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN
+                **Side effects:** Persists the profile update; emits an audit event."""
+    )
     public ResponseEntity<ApiResponse<CustomerResponseDTO>> updateCustomer(
             @PathVariable String customerNo,
-            @Valid @RequestBody CustomerRequestDTO request
-    ) {
-        CustomerResponseDTO responseBody = service.updateCustomer(customerNo, request);
-        return buildResponse(responseBody, "Customer updated successfully", HttpStatus.OK);
+            @Valid @RequestBody CustomerRequestDTO request) {
+        return ResponseEntity.ok(ApiResponse.success(service.updateCustomer(customerNo, request), "Customer updated successfully"));
     }
 
     @DeleteMapping("/{customerNo}")
-    @Operation(summary = "Soft delete customer", description = "Marks a customer as deleted in the system without removing the record from the database.")
+    @PreAuthorize("hasAnyRole('ADMIN','BRANCH_MANAGER')")
+    @Operation(
+        summary = "Soft-delete a customer by customer number",
+        description = """
+                Marks the customer row as deleted (does not physically remove it). Downstream services
+                treat soft-deleted customers as inactive.
+
+                **Allowed roles:** ADMIN, BRANCH_MANAGER
+                **Side effects:** Sets isDeleted=true; emits an audit event."""
+    )
     public ResponseEntity<ApiResponse<Void>> deleteCustomer(@PathVariable String customerNo) {
         service.deleteCustomer(customerNo);
-        return buildResponse(null, "Customer deleted successfully", HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.success("Customer deleted successfully"));
+    }
+
+    @DeleteMapping("/by-user/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN','BRANCH_MANAGER')")
+    @Operation(
+        summary = "Soft-delete a customer by identity userId",
+        description = """
+                Same semantics as DELETE /customers/{customerNo}, but resolves the customer via the
+                identity-service userId — useful for cascading deletes initiated from identity admin flows.
+
+                **Allowed roles:** ADMIN, BRANCH_MANAGER
+                **Side effects:** Sets isDeleted=true; emits an audit event."""
+    )
+    public ResponseEntity<ApiResponse<Void>> deleteCustomerByUserId(@PathVariable String userId) {
+        service.deleteCustomerByUserId(userId);
+        return ResponseEntity.ok(ApiResponse.success("Customer deleted successfully"));
     }
 
     @PutMapping("/{customerNo}/activate")
-    @Operation(summary = "Activate customer account", description = "Changes the customer status to ACTIVE, enabling their account services.")
+    @PreAuthorize("hasAnyRole('CSR','BRANCH_MANAGER')")
+    @Operation(
+        summary = "Activate a customer account",
+        description = """
+                Transitions the customer to ACTIVE status. Typically called after KYC approval and the
+                first account application is approved.
+
+                **Allowed roles:** CSR, BRANCH_MANAGER
+                **Side effects:** Updates customer status to ACTIVE; emits an audit event."""
+    )
     public ResponseEntity<ApiResponse<Void>> activateCustomer(@PathVariable String customerNo) {
         service.activateCustomer(customerNo);
-        return buildResponse(null, "Customer account activated", HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.success("Customer account activated"));
     }
 
     @PutMapping("/{customerNo}/block")
-    @Operation(summary = "Block customer account", description = "Sets the customer status to BLOCKED, restricting account access due to risk or security reasons.")
+    @PreAuthorize("hasAnyRole('CSR','BRANCH_MANAGER')")
+    @Operation(
+        summary = "Block a customer account",
+        description = """
+                Transitions the customer to BLOCKED status — usually because of fraud signals or
+                compliance review. Blocked customers cannot transact via account-service.
+
+                **Allowed roles:** CSR, BRANCH_MANAGER
+                **Side effects:** Updates customer status to BLOCKED; emits an audit event."""
+    )
     public ResponseEntity<ApiResponse<Void>> blockCustomer(@PathVariable String customerNo) {
         service.blockCustomer(customerNo);
-        return buildResponse(null, "Customer account blocked", HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.success("Customer account blocked"));
     }
 
     @PutMapping("/{customerNo}/deactivate")
-    @Operation(summary = "Deactivate customer account", description = "Sets the customer status to INACTIVE, typically used for account closures.")
+    @PreAuthorize("hasAnyRole('CSR','BRANCH_MANAGER')")
+    @Operation(
+        summary = "Deactivate a customer account",
+        description = """
+                Transitions the customer to INACTIVE status — used for voluntary dormancy. The
+                customer can be reactivated by a CSR later.
+
+                **Allowed roles:** CSR, BRANCH_MANAGER
+                **Side effects:** Updates customer status to INACTIVE; emits an audit event."""
+    )
     public ResponseEntity<ApiResponse<Void>> deactivateCustomer(@PathVariable String customerNo) {
         service.deactivateCustomer(customerNo);
-        return buildResponse(null, "Customer account deactivated", HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.success("Customer account deactivated"));
     }
 
     @GetMapping
-    @Operation(summary = "Fetch all customers", description = "Retrieves a list of all customers registered in the system.")
+    @Operation(
+        summary = "List all customers",
+        description = """
+                Returns every non-deleted customer. Pagination is planned for a future iteration; for
+                now the result set is unbounded — use the filter endpoints below for narrower queries.
+
+                **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
     public ResponseEntity<ApiResponse<List<CustomerResponseDTO>>> getAllCustomers() {
-        List<CustomerResponseDTO> responseBody = service.getAllCustomers();
-        return buildResponse(responseBody, "All customers retrieved successfully", HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.success(service.getAllCustomers(), "Customers retrieved successfully"));
     }
 
     @GetMapping("/status/{status}")
-    @Operation(summary = "Filter customers by status", description = "Retrieves a list of customers based on their current status (e.g., ACTIVE, BLOCKED).")
+    @Operation(
+        summary = "Filter customers by status",
+        description = """
+                Returns customers in the requested status (e.g. REGISTERED, ACTIVE, BLOCKED, INACTIVE).
+
+                **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
     public ResponseEntity<ApiResponse<List<CustomerResponseDTO>>> getByStatus(@PathVariable String status) {
-        List<CustomerResponseDTO> responseBody = service.getCustomersByStatus(status);
-        return buildResponse(responseBody, "Customers with status [" + status + "] retrieved", HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.success(service.getCustomersByStatus(status),
+                "Customers with status [" + status + "] retrieved"));
     }
 
     @GetMapping("/branch/{branchCode}")
-    @Operation(summary = "Filter customers by branch", description = "Retrieves all customers associated with a specific bank branch code.")
+    @Operation(
+        summary = "Filter customers by branch",
+        description = """
+                Returns customers assigned to the given branch — primarily used by branch-manager
+                dashboards.
+
+                **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
     public ResponseEntity<ApiResponse<List<CustomerResponseDTO>>> getByBranch(@PathVariable String branchCode) {
-        List<CustomerResponseDTO> responseBody = service.getCustomersByBranch(branchCode);
-        return buildResponse(responseBody, "Customers for branch [" + branchCode + "] retrieved", HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.success(service.getCustomersByBranch(branchCode),
+                "Customers for branch [" + branchCode + "] retrieved"));
     }
 
     @GetMapping("/city/{city}")
-    @Operation(summary = "Filter customers by city", description = "Retrieves a list of customers residing in a specific city.")
-    public ResponseEntity<ApiResponse<List<CustomerResponseDTO>>> getByCity(@PathVariable String city) {
-        List<CustomerResponseDTO> responseBody = service.getCustomersByCity(city);
-        return buildResponse(responseBody, "Customers in city [" + city + "] retrieved", HttpStatus.OK);
-    }
-    @PostMapping("/evaluate")
-    @Operation(summary = "Evaluate loan eligibility", description = "Checks age, KYC, and performs EMI vs Income calculation.")
-    public ResponseEntity<ApiResponse<LoanEligibilityResponse>> evaluate(@Valid @RequestBody LoanApplicationRequest request) {
-        LoanEligibilityResponse data = service.evaluateLoan(request);
+    @Operation(
+        summary = "Filter customers by city",
+        description = """
+                Returns customers whose registered address is in the given city.
 
-        return ResponseEntity.ok(
-                ApiResponse.<LoanEligibilityResponse>builder()
-                        .status("SUCCESS")
-                        .message(data.isEligible() ? "Loan Pre-Approved" : "Loan Application Rejected")
-                        .data(data)
-                        .timestamp(LocalDateTime.now())
-                        .build()
-        );
+                **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
+    public ResponseEntity<ApiResponse<List<CustomerResponseDTO>>> getByCity(@PathVariable String city) {
+        return ResponseEntity.ok(ApiResponse.success(service.getCustomersByCity(city),
+                "Customers in city [" + city + "] retrieved"));
+    }
+
+    @PostMapping("/evaluate")
+    @Operation(
+        summary = "Evaluate loan eligibility for a customer",
+        description = """
+                Runs the in-house eligibility rule set against the customer's profile and the requested
+                loan parameters, returning a pre-approval decision and indicative terms.
+
+                **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
+    public ResponseEntity<ApiResponse<LoanEligibilityResponse>> evaluate(@Valid @RequestBody LoanApplicationRequest request) {
+        LoanEligibilityResponse result = service.evaluateLoan(request);
+        return ResponseEntity.ok(ApiResponse.success(result,
+                result.isEligible() ? "Loan pre-approved" : "Loan application rejected"));
     }
 }

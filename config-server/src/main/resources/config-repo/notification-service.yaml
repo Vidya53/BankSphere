@@ -1,0 +1,72 @@
+server:
+  port: ${NOTIFICATION_SERVICE_PORT:8088}
+
+spring:
+  datasource:
+    # Credentials + driver come from config-repo/application.yaml (shared).
+    url: ${NOTIFICATION_DB_URL:jdbc:mysql://localhost:3306/notification_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: notification-service-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        spring.json.trusted.packages: "com.cts.*"
+        spring.json.value.default.type: com.cts.notificationservice.dto.NotificationEventMessage
+
+  # JavaMailSender (SMTP)
+  # For Gmail/dev: use App Password; for production: use SendGrid SMTP relay
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:noreply@banksphere.com}
+    password: ${SMTP_PASSWORD:changeme}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+notification:
+  kafka:
+    topic: ${NOTIFICATION_KAFKA_TOPIC:banking.notification.events}
+  mail:
+    from: ${NOTIFICATION_MAIL_FROM:noreply@banksphere.com}
+    from-name: ${NOTIFICATION_MAIL_FROM_NAME:BankSphere}
+  sms:
+    account-sid: ${TWILIO_ACCOUNT_SID:#{null}}
+    auth-token:  ${TWILIO_AUTH_TOKEN:#{null}}
+    from: ${TWILIO_FROM_PHONE:+0000000000}
+  push:
+    enabled: ${FCM_PUSH_ENABLED:false}
+  rate-limit:
+    max-per-hour: ${NOTIF_RATE_LIMIT:20}
+  dnd:
+    start-hour: ${NOTIF_DND_START:22}
+    end-hour:   ${NOTIF_DND_END:8}
+  retry:
+    max-attempts: 3
+    interval-ms: 300000   # 5 minutes between scheduled retry sweeps
+
+management:
+  health:
+    mail:
+      enabled: false   # No real SMTP in dev; disable to prevent health check timeout
+
+springdoc:
+  api-docs:
+    path: /notification-service/api-docs
+  swagger-ui:
+    path: /notification-service/swagger-ui.html
+
+logging:
+  level:
+    com.cts.notificationservice: INFO
+    org.springframework.kafka: WARN
+    org.springframework.mail: INFO

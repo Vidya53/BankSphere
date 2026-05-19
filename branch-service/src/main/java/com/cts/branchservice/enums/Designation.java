@@ -1,0 +1,17 @@
+package com.cts.branchservice.enums;
+
+public enum Designation {
+    BRANCH_MANAGER,
+    DEPUTY_MANAGER,
+    OPERATIONS_MANAGER,
+    RELATIONSHIP_MANAGER,
+    LOAN_OFFICER,
+    CREDIT_ANALYST,
+    TELLER,
+    CASHIER,
+    CUSTOMER_SERVICE_REPRESENTATIVE,
+    COMPLIANCE_OFFICER,
+    IT_SUPPORT,
+    SECURITY_OFFICER,
+    INTERN
+}

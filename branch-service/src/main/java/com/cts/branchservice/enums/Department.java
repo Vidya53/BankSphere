@@ -1,0 +1,15 @@
+package com.cts.branchservice.enums;
+
+public enum Department {
+    RETAIL_BANKING,
+    CORPORATE_BANKING,
+    LOANS_AND_ADVANCES,
+    TRADE_FINANCE,
+    TREASURY,
+    OPERATIONS,
+    COMPLIANCE_AND_RISK,
+    CUSTOMER_SERVICE,
+    INFORMATION_TECHNOLOGY,
+    HUMAN_RESOURCES,
+    SECURITY
+}

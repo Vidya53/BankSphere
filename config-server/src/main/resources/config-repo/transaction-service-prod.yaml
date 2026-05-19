@@ -1,0 +1,26 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRANSACTION SERVICE — PROD profile overrides
+# ═══════════════════════════════════════════════════════════════════════════════
+
+spring:
+  datasource:
+    hikari:
+      # Scale up pool for production transaction volume
+      maximum-pool-size: 50
+      minimum-idle: 10
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+# Disable Swagger in production — never expose API docs on a live banking system
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+logging:
+  level:
+    root: WARN
+    com.cts.transactionservice: INFO
+    org.hibernate.SQL: WARN

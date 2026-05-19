@@ -1,0 +1,334 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# API GATEWAY CONFIGURATION
+# Port 8090 | WebFlux (reactive) | no Swagger | manages all inbound routes
+# ═══════════════════════════════════════════════════════════════════════════════
+
+server:
+  port: ${API_GATEWAY_PORT:8090}
+
+# Must match the secret used by identity-service to sign tokens
+jwt:
+  secret: ${JWT_SECRET:bXlTdXBlclNlY3JldEtleUZvckJhbmtTcGhlcmVBcHBsaWNhdGlvbjEyMw==}
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false   # explicit routes only — no auto-discovery routing
+
+      routes:
+
+        # ── identity-service — auth endpoints (public + logout-all) ──────────
+        - id: identity-service-auth
+          uri: lb://identity-service
+          predicates:
+            - Path=/auth/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: identity-service
+                fallbackUri: forward:/fallback/identity-service
+
+        # ── identity-service — admin staff management ─────────────────────────
+        - id: identity-service-admin
+          uri: lb://identity-service
+          predicates:
+            - Path=/api/v1/admin/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: identity-service
+                fallbackUri: forward:/fallback/identity-service
+
+        # ── customer-service ─────────────────────────────────────────────────
+        - id: customer-service-customers
+          uri: lb://customer-service
+          predicates:
+            - Path=/customers/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: customer-service
+                fallbackUri: forward:/fallback/customer-service
+
+        - id: customer-service-kyc
+          uri: lb://customer-service
+          predicates:
+            - Path=/kyc/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: customer-service
+                fallbackUri: forward:/fallback/customer-service
+
+        # ── account-service ──────────────────────────────────────────────────
+        - id: account-service-accounts
+          uri: lb://account-service
+          predicates:
+            - Path=/api/v1/accounts/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: account-service
+                fallbackUri: forward:/fallback/account-service
+
+        - id: account-service-applications
+          uri: lb://account-service
+          predicates:
+            - Path=/api/v1/account-applications/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: account-service
+                fallbackUri: forward:/fallback/account-service
+
+        - id: account-service-staff
+          uri: lb://account-service
+          predicates:
+            - Path=/api/v1/staff/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: account-service
+                fallbackUri: forward:/fallback/account-service
+
+        - id: account-service-internal
+          uri: lb://account-service
+          predicates:
+            - Path=/api/v1/internal/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: account-service
+                fallbackUri: forward:/fallback/account-service
+
+        - id: account-service-transfers
+          uri: lb://account-service
+          predicates:
+            - Path=/api/v1/transfers/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: account-service
+                fallbackUri: forward:/fallback/account-service
+
+        # ── transaction-service ──────────────────────────────────────────────
+        - id: transaction-service
+          uri: lb://transaction-service
+          predicates:
+            - Path=/api/v1/transactions/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: transaction-service
+                fallbackUri: forward:/fallback/transaction-service
+
+        # ── loan-service ─────────────────────────────────────────────────────
+        - id: loan-service
+          uri: lb://loan-service
+          predicates:
+            - Path=/loans/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: loan-service
+                fallbackUri: forward:/fallback/loan-service
+
+        # ── notification-service ──────────────────────────────────────────────
+        # Only the log-query API is exposed; internal dispatch endpoint stays internal.
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/v1/notifications/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: notification-service
+                fallbackUri: forward:/fallback/notification-service
+
+        # ── audit-compliance-service ─────────────────────────────────────────
+        # Internal ingestion endpoint (/api/v1/internal/audit) is NOT routed here.
+        - id: audit-compliance-service
+          uri: lb://audit-compliance-service
+          predicates:
+            - Path=/api/v1/audit/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: audit-compliance-service
+                fallbackUri: forward:/fallback/audit-compliance-service
+
+        # ── branch-service ───────────────────────────────────────────────────
+        # Internal endpoints (/api/v1/internal/branches/**) are NOT routed here;
+        # they are only accessible by other services within the cluster.
+        - id: branch-service-branches
+          uri: lb://branch-service
+          predicates:
+            - Path=/api/v1/branches/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: branch-service
+                fallbackUri: forward:/fallback/branch-service
+
+        - id: branch-service-employees
+          uri: lb://branch-service
+          predicates:
+            - Path=/api/v1/employees/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: branch-service
+                fallbackUri: forward:/fallback/branch-service
+
+        # ════════════════════════════════════════════════════════════════════
+        # NEW ROUTES — dashboards, analytics, preferences, support, password
+        # ════════════════════════════════════════════════════════════════════
+
+        # ── analytics (all aggregated in audit-compliance-service) ───────────
+        - id: analytics-routes
+          uri: lb://audit-compliance-service
+          predicates:
+            - Path=/api/analytics/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: audit-compliance-service
+                fallbackUri: forward:/fallback/audit-compliance-service
+
+        # ── role-specific dashboards routed to their natural service ────────
+        - id: csr-dashboard
+          uri: lb://customer-service
+          predicates:
+            - Path=/api/csr/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: customer-service
+                fallbackUri: forward:/fallback/customer-service
+
+        - id: branch-manager-dashboard
+          uri: lb://branch-service
+          predicates:
+            - Path=/api/branch-manager/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: branch-service
+                fallbackUri: forward:/fallback/branch-service
+
+        - id: loan-officer-dashboard
+          uri: lb://loan-service
+          predicates:
+            - Path=/api/loan-officer/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: loan-service
+                fallbackUri: forward:/fallback/loan-service
+
+        - id: compliance-dashboard
+          uri: lb://audit-compliance-service
+          predicates:
+            - Path=/api/compliance/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: audit-compliance-service
+                fallbackUri: forward:/fallback/audit-compliance-service
+
+        # ── notification preferences ────────────────────────────────────────
+        - id: notification-preferences
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: notification-service
+                fallbackUri: forward:/fallback/notification-service
+
+        # ── password change ─────────────────────────────────────────────────
+        - id: identity-password-change
+          uri: lb://identity-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: identity-service
+                fallbackUri: forward:/fallback/identity-service
+
+        # ── support tickets ─────────────────────────────────────────────────
+        - id: support-tickets
+          uri: lb://customer-service
+          predicates:
+            - Path=/api/support/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: customer-service
+                fallbackUri: forward:/fallback/customer-service
+
+# ── Gateway-specific Resilience4j instances ──────────────────────────────────
+# The gateway uses a longer timelimiter (5s vs 3s) because it is the edge
+# component — the upstream service is allowed more time before the gateway cuts it.
+resilience4j:
+  circuitbreaker:
+    instances:
+      customer-service:
+        baseConfig: default
+      account-service:
+        baseConfig: default
+      transaction-service:
+        baseConfig: default
+      loan-service:
+        baseConfig: default
+      identity-service:
+        baseConfig: default
+      branch-service:
+        baseConfig: default
+      audit-compliance-service:
+        baseConfig: default
+      notification-service:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
+    instances:
+      customer-service:
+        baseConfig: default
+      account-service:
+        baseConfig: default
+      transaction-service:
+        baseConfig: default
+      loan-service:
+        baseConfig: default
+      identity-service:
+        baseConfig: default
+      branch-service:
+        baseConfig: default
+      audit-compliance-service:
+        baseConfig: default
+      notification-service:
+        baseConfig: default
+
+# ── Actuator — expose gateway refresh for hot-reload of routes ────────────────
+# POST /actuator/gateway/refresh reloads routes without restarting the gateway.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,refresh,gateway
+  endpoint:
+    gateway:
+      enabled: true
+    health:
+      show-details: when_authorized
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    com.cts.apigateway: DEBUG

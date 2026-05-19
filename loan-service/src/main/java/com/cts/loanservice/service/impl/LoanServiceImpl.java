@@ -2,7 +2,9 @@ package com.cts.loanservice.service.impl;
 
 import com.cts.loanservice.client.AccountClient;
 import com.cts.loanservice.client.CustomerClient;
+import com.cts.loanservice.client.TransactionServiceClient;
 import com.cts.loanservice.client.dto.CustomerApiResponse;
+import com.cts.loanservice.client.dto.TransactionRecordRequest;
 import com.cts.loanservice.dto.request.*;
 import com.cts.loanservice.dto.response.*;
 import com.cts.loanservice.entity.EmiPayment;
@@ -15,9 +17,11 @@ import com.cts.loanservice.repository.EmiPaymentRepository;
 import com.cts.loanservice.repository.LoanRepository;
 import com.cts.loanservice.service.LoanService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,12 +31,14 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LoanServiceImpl implements LoanService {
 
     private final LoanRepository repo;
     private final EmiPaymentRepository emiPaymentRepo;
     private final AccountClient accountClient;
     private final CustomerClient customerClient;
+    private final TransactionServiceClient transactionServiceClient;
 
     // Configurable constants
     private static final double MAX_EMI_TO_INCOME_RATIO = 0.50;   // 50% of income
@@ -50,6 +56,19 @@ public class LoanServiceImpl implements LoanService {
         if (customerResponse == null || customerResponse.getData() == null
                 || !"ACTIVE".equalsIgnoreCase(customerResponse.getData().getStatus())) {
             throw new BusinessException("Customer is not active or eligible for a loan");
+        }
+
+        // Account must be ACTIVE too — admin / branch manager can have closed
+        // the account via the cascade, and the loan can't be disbursed against
+        // a non-active account anyway.
+        if (req.getAccountId() != null && !req.getAccountId().isBlank()) {
+            com.cts.loanservice.client.dto.AccountActiveResponse acc =
+                    accountClient.isAccountActive(req.getAccountId());
+            boolean active = acc != null && Boolean.TRUE.equals(acc.getData());
+            if (!active) {
+                throw new BusinessException(
+                        "Disbursement account is not active: " + req.getAccountId());
+            }
         }
 
         // Validate loan type
@@ -113,6 +132,15 @@ public class LoanServiceImpl implements LoanService {
 
         accountClient.credit(loan.getAccountId(), loan.getAmount());
 
+        recordLedger(
+                "DEPOSIT",
+                null,
+                loan.getAccountId(),
+                loan.getAmount(),
+                "LOAN-DISB-" + loan.getLoanId() + "-" + shortUuid(),
+                "Loan disbursement — " + loan.getLoanType() + " loan #" + loan.getLoanId()
+        );
+
         loan.setStatus(LoanStatus.DISBURSED);
         loan.setDisbursedAt(LocalDateTime.now());
         loan.setNextDueDate(LocalDate.now().plusMonths(1));
@@ -145,7 +173,10 @@ public class LoanServiceImpl implements LoanService {
         }
 
         double totalDeduction = req.getAmount() + penalty;
-        accountClient.debit(req.getAccountId(), totalDeduction);
+        // PIN-verified debit — same flow as transfer. account-service runs the
+        // attempt-counter + lockout logic and refuses the debit on bad PIN.
+        accountClient.debitWithPin(req.getAccountId(),
+                java.util.Map.of("pin", req.getPin(), "amount", totalDeduction));
 
         // Calculate interest & principal components
         double monthlyRate = loan.getInterestRate() / (12 * 100);
@@ -169,6 +200,16 @@ public class LoanServiceImpl implements LoanService {
         payment.setLate(isLate);
         payment.setTransactionRef("TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         emiPaymentRepo.save(payment);
+
+        recordLedger(
+                "PAYMENT",
+                req.getAccountId(),
+                null,
+                totalDeduction,
+                payment.getTransactionRef(),
+                "EMI payment for loan #" + loan.getLoanId()
+                        + (isLate ? " (late — penalty ₹" + penalty + ")" : "")
+        );
 
         if (remaining <= 0) {
             loan.setStatus(LoanStatus.CLOSED);
@@ -334,7 +375,7 @@ public class LoanServiceImpl implements LoanService {
         double foreclosureCharge = 0.0;
         double prepayAmount;
 
-        if (req.isFullForeclosure()) {
+        if (Boolean.TRUE.equals(req.getFullForeclosure())) {
             // Full foreclosure: pay remaining + 2% charge
             foreclosureCharge = round(loan.getRemainingAmount() * FORECLOSURE_CHARGE_RATE);
             prepayAmount = loan.getRemainingAmount();
@@ -347,7 +388,27 @@ public class LoanServiceImpl implements LoanService {
         }
 
         double totalDeducted = round(prepayAmount + foreclosureCharge);
-        accountClient.debit(req.getAccountId(), totalDeducted);
+        try {
+            accountClient.debitWithPin(req.getAccountId(),
+                    java.util.Map.of("pin", req.getPin(), "amount", totalDeducted));
+        } catch (feign.FeignException.UnprocessableEntity ex) {
+            // account-service uses 422 for balance / PIN / lockout rejections.
+            // Repackage the balance case with prepay-specific context so the
+            // customer sees what total was required and why (charge breakdown).
+            String body = ex.contentUTF8() == null ? "" : ex.contentUTF8().toLowerCase();
+            if (body.contains("balance")) {
+                String breakdown = foreclosureCharge > 0
+                        ? String.format(" (₹%.2f principal + ₹%.2f foreclosure charge @ 2%%)",
+                                prepayAmount, foreclosureCharge)
+                        : "";
+                throw new BusinessException(String.format(
+                        "Insufficient balance in account %s to %s. Total required: ₹%.2f%s.",
+                        req.getAccountId(),
+                        Boolean.TRUE.equals(req.getFullForeclosure()) ? "foreclose this loan" : "prepay",
+                        totalDeducted, breakdown));
+            }
+            throw ex;   // wrong PIN, locked account, etc. — let the global Feign handler surface it
+        }
 
         double remaining = Math.max(0, round(loan.getRemainingAmount() - prepayAmount));
         loan.setRemainingAmount(remaining);
@@ -364,6 +425,17 @@ public class LoanServiceImpl implements LoanService {
         payment.setLate(false);
         payment.setTransactionRef("PRE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         emiPaymentRepo.save(payment);
+
+        recordLedger(
+                "PAYMENT",
+                req.getAccountId(),
+                null,
+                totalDeducted,
+                payment.getTransactionRef(),
+                (Boolean.TRUE.equals(req.getFullForeclosure()) ? "Loan foreclosure" : "Loan prepayment")
+                        + " — loan #" + loan.getLoanId()
+                        + (foreclosureCharge > 0 ? " (charge ₹" + foreclosureCharge + ")" : "")
+        );
 
         String message;
         if (remaining <= 0) {
@@ -433,6 +505,7 @@ public class LoanServiceImpl implements LoanService {
         return LoanResponse.builder()
                 .loanId(loan.getLoanId())
                 .customerId(loan.getCustomerId())
+                .accountId(loan.getAccountId())
                 .loanType(loan.getLoanType() != null ? loan.getLoanType().name() : null)
                 .amount(loan.getAmount())
                 .interestRate(loan.getInterestRate())
@@ -457,6 +530,36 @@ public class LoanServiceImpl implements LoanService {
 
     private double round(double value) {
         return Math.round(value * 100.0) / 100.0;
+    }
+
+    private static String shortUuid() {
+        return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    /**
+     * Best-effort ledger entry against transaction-service. Failure here doesn't
+     * roll back the loan operation — the funds have already moved on
+     * account-service and the customer's balance is correct. The fallback logs
+     * the gap so it can be reconciled out-of-band.
+     */
+    private void recordLedger(String type, String senderAccountId, String receiverAccountId,
+                              double amount, String idempotencyKey, String description) {
+        try {
+            transactionServiceClient.initiate(TransactionRecordRequest.builder()
+                    .senderAccountId(senderAccountId)
+                    .receiverAccountId(receiverAccountId)
+                    .amount(BigDecimal.valueOf(amount))
+                    .currency("INR")
+                    .transactionType(type)
+                    .channel("INTERNAL")
+                    .idempotencyKey(idempotencyKey)
+                    .initialStatus("SUCCESS")
+                    .description(description)
+                    .build());
+        } catch (Exception ex) {
+            log.warn("Failed to record ledger entry (type={}, key={}): {}",
+                    type, idempotencyKey, ex.getMessage());
+        }
     }
 }
 

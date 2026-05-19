@@ -16,17 +16,22 @@ public class AccountApplicationRequest {
     @NotNull(message = "Account type is required")
     private AccountType accountType;
 
-    @DecimalMin(value = "0.00", message = "Initial deposit cannot be negative")
-    @Digits(integer = 13, fraction = 2, message = "Invalid deposit amount format")
+    @NotBlank(message = "Branch code is required")
+    @Pattern(regexp = "^[A-Z0-9]{2,20}$", message = "Branch code must be 2-20 uppercase letters or digits")
+    private String branchCode;
+
+    @DecimalMin(value = "0.00", message = "Initial deposit cannot be negative; please enter zero or a positive amount")
+    @Digits(integer = 13, fraction = 2, message = "Amount supports up to 13 integer and 2 fractional digits")
     private BigDecimal initialDeposit;
 
-    @Size(max = 100, message = "Nominee name must not exceed 100 characters")
+    @Size(min = 2, max = 100, message = "Nominee name must be between 2 and 100 characters")
+    @Pattern(regexp = "^[A-Za-z][A-Za-z .'-]{1,99}$", message = "Nominee name may contain only letters, spaces, hyphens and apostrophes")
     private String nomineeName;
 
-    @Size(max = 50, message = "Nominee relation must not exceed 50 characters")
+    @Size(min = 2, max = 50, message = "Nominee relation must be between 2 and 50 characters")
     private String nomineeRelation;
 
-    @Pattern(regexp = "^[0-9]{10,15}$", message = "Invalid nominee phone number")
+    @Pattern(regexp = "^$|^[6-9][0-9]{9}$", message = "Nominee mobile must be a 10-digit number starting with 6, 7, 8 or 9")
     private String nomineePhone;
 
     @Size(max = 200, message = "Nominee address must not exceed 200 characters")
@@ -35,4 +40,3 @@ public class AccountApplicationRequest {
     @Size(max = 500, message = "Purpose must not exceed 500 characters")
     private String purpose;
 }
-

@@ -10,69 +10,97 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "KYC Management", description = "APIs for handling Know Your Customer (KYC) submissions, approvals, and rejections")
+@Tag(name = "KYC", description = "Know-Your-Customer document submission, review, approval, and rejection")
 public class KycController {
 
     private final KycService service;
 
-    /**
-     * Helper method to wrap data into a consistent ApiResponse format.
-     */
-    private <T> ResponseEntity<ApiResponse<T>> buildResponse(T data, String message, HttpStatus status) {
-        ApiResponse<T> response = ApiResponse.<T>builder()
-                .status("SUCCESS")
-                .message(message)
-                .data(data)
-                .timestamp(LocalDateTime.now())
-                .build();
-        return new ResponseEntity<>(response, status);
-    }
-
     @PostMapping("/customers/{customerNo}/kyc")
-    @Operation(summary = "Submit KYC documents", description = "Allows a customer to submit their identification documents for verification.")
+    @PreAuthorize("hasAnyRole('CUSTOMER','CSR','BRANCH_MANAGER','ADMIN')")
+    @Operation(
+        summary = "Submit KYC documents for a customer",
+        description = """
+                Records the identification documents (type and number) for a customer and places the
+                KYC record in SUBMITTED state, ready for staff review.
+
+                **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, ADMIN
+                **Side effects:** Persists a new KYC row; emits an audit event."""
+    )
     public ResponseEntity<ApiResponse<KycResponseDTO>> submitKyc(
             @PathVariable String customerNo,
-            @Valid @RequestBody KycRequestDTO request
-    ) {
-        KycResponseDTO responseBody = service.submitKyc(customerNo, request);
-        return buildResponse(responseBody, "KYC documents submitted successfully", HttpStatus.CREATED);
+            @Valid @RequestBody KycRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.created(service.submitKyc(customerNo, request), "KYC documents submitted successfully"));
     }
 
     @PutMapping("/customers/{customerNo}/kyc/approve")
-    @Operation(summary = "Approve KYC", description = "Marks the customer's KYC status as verified and sets the verification date.")
+    @PreAuthorize("hasAnyRole('CSR','BRANCH_MANAGER','ADMIN')")
+    @Operation(
+        summary = "Approve a pending KYC submission",
+        description = """
+                Transitions the KYC record to APPROVED, sets the verification timestamp, and unlocks
+                downstream actions such as account application approval and loan disbursement.
+
+                **Allowed roles:** CSR, BRANCH_MANAGER, ADMIN
+                **Side effects:** Updates KYC status to APPROVED; emits an audit event."""
+    )
     public ResponseEntity<ApiResponse<Void>> approveKyc(@PathVariable String customerNo) {
         service.approveKyc(customerNo);
-        return buildResponse(null, "KYC approved successfully", HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.success("KYC approved successfully"));
     }
 
     @PutMapping("/customers/{customerNo}/kyc/reject")
-    @Operation(summary = "Reject KYC", description = "Rejects the KYC submission and records the reason for rejection.")
+    @PreAuthorize("hasAnyRole('CSR','BRANCH_MANAGER','ADMIN')")
+    @Operation(
+        summary = "Reject a pending KYC submission with a reason",
+        description = """
+                Transitions the KYC record to REJECTED and stores the rejection reason. The customer
+                must resubmit before any account or loan flows can proceed.
+
+                **Allowed roles:** CSR, BRANCH_MANAGER, ADMIN
+                **Side effects:** Updates KYC status to REJECTED; emits an audit event."""
+    )
     public ResponseEntity<ApiResponse<Void>> rejectKyc(
             @PathVariable String customerNo,
-            @RequestParam String reason
-    ) {
+            @RequestParam String reason) {
         service.rejectKyc(customerNo, reason);
-        return buildResponse(null, "KYC rejected. Reason: " + reason, HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.success("KYC rejected. Reason: " + reason));
     }
 
     @GetMapping("/customers/{customerNo}/kyc")
-    @Operation(summary = "Get KYC status", description = "Retrieves the current KYC record and status for a specific customer.")
+    @Operation(
+        summary = "Get the current KYC record for a customer",
+        description = """
+                Returns the latest KYC submission and its review status for the given customer.
+
+                **Allowed roles:** Any authenticated user"""
+    )
     public ResponseEntity<ApiResponse<KycResponseDTO>> getKyc(@PathVariable String customerNo) {
-        KycResponseDTO responseBody = service.getKycStatus(customerNo);
-        return buildResponse(responseBody, "KYC status retrieved successfully", HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.success(service.getKycStatus(customerNo), "KYC status retrieved successfully"));
     }
 
     @GetMapping("/kyc/pending")
-    @Operation(summary = "List pending KYC", description = "Retrieves a list of all KYC submissions that are currently awaiting verification.")
-    public ResponseEntity<ApiResponse<List<KycResponseDTO>>> pending() {
-        List<KycResponseDTO> responseBody = service.getPendingKyc();
-        return buildResponse(responseBody, "Pending KYC list retrieved", HttpStatus.OK);
+    @PreAuthorize("hasAnyRole('CSR','BRANCH_MANAGER','ADMIN')")
+    @Operation(
+        summary = "List KYC submissions awaiting verification",
+        description = """
+                Returns KYC records in SUBMITTED or UNDER_REVIEW state. Pass a branchCode query param
+                to narrow the queue to one branch (used by branch-scoped CSR dashboards).
+
+                **Allowed roles:** CSR, BRANCH_MANAGER, ADMIN"""
+    )
+    public ResponseEntity<ApiResponse<List<KycResponseDTO>>> pending(
+            @RequestParam(required = false) String branchCode) {
+        List<KycResponseDTO> list = (branchCode != null && !branchCode.isBlank())
+                ? service.getPendingKycByBranch(branchCode)
+                : service.getPendingKyc();
+        return ResponseEntity.ok(ApiResponse.success(list, "Pending KYC list retrieved: " + list.size()));
     }
 }

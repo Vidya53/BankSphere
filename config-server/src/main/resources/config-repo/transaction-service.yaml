@@ -1,0 +1,92 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRANSACTION SERVICE CONFIGURATION
+# Port 8082 | Transaction processing, limits, history | HikariCP tuned
+# ═══════════════════════════════════════════════════════════════════════════════
+
+server:
+  port: ${TRANSACTION_SERVICE_PORT:8082}
+  servlet:
+    context-path: /
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 20
+    connection-timeout: 5000
+
+spring:
+  datasource:
+    # Credentials + driver come from config-repo/application.yaml (shared).
+    url: ${TRANSACTION_DB_URL:jdbc:mysql://localhost:3306/transaction_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+
+    # HikariCP — production-grade connection pool tuned for transaction throughput
+    hikari:
+      pool-name: TransactionHikariPool
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 30000
+      connection-timeout: 20000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+
+  # JPA defaults (ddl-auto, show-sql, dialect, format_sql) inherited from
+  # config-repo/application.yaml. The settings below are this service's
+  # extra throughput knobs.
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        use_sql_comments: false
+        jdbc:
+          batch_size: 50
+          fetch_size: 100
+        order_inserts: true
+        order_updates: true
+
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+# ── Business limits — externalized for compliance/operations team ─────────────
+# Change these values in the config server without redeploying the service.
+# After updating, POST /actuator/refresh to reload (requires @RefreshScope on
+# the @ConfigurationProperties bean that reads these).
+transaction:
+  limits:
+    max-single-amount: ${TRANSACTION_MAX_SINGLE_AMOUNT:500000.00}
+    daily-transfer-limit: ${TRANSACTION_DAILY_TRANSFER_LIMIT:1000000.00}
+    max-daily-count: ${TRANSACTION_MAX_DAILY_COUNT:50}
+  stale-pending:
+    timeout-minutes: ${TRANSACTION_STALE_TIMEOUT_MINUTES:30}
+  reference:
+    prefix: ${TRANSACTION_REFERENCE_PREFIX:TXN}
+    max-generation-attempts: 10
+  pagination:
+    default-page-size: 20
+    max-page-size: 100
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+    filter: true
+    try-it-out-enabled: true
+  show-actuator: false
+  packages-to-scan: com.cts.transactionservice.controller
+
+logging:
+  level:
+    root: INFO
+    com.cts.transactionservice: INFO
+    org.hibernate.SQL: WARN
+    org.springframework.web: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{correlationId:-}] [%X{userId:-}] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{correlationId:-}] [%X{userId:-}] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/transaction-service.log

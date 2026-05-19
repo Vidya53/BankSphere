@@ -1,0 +1,26 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# DEV PROFILE — shared overrides for all services when spring.profiles.active=dev
+# ═══════════════════════════════════════════════════════════════════════════════
+
+spring:
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# Expose all actuator endpoints in dev for easier debugging
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

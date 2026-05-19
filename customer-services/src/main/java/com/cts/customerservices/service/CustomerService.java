@@ -11,11 +11,21 @@ import java.util.List;
 public interface CustomerService {
 
     CustomerResponseDTO registerCustomer(
-            CustomerRequestDTO request
+            CustomerRequestDTO request,
+            String userId
     );
 
     CustomerResponseDTO getCustomer(
             String customerNo
+    );
+
+    CustomerResponseDTO getMyProfile(
+            String userId
+    );
+
+    CustomerResponseDTO updateMyProfile(
+            String userId,
+            CustomerRequestDTO request
     );
 
     CustomerResponseDTO updateCustomer(
@@ -25,6 +35,15 @@ public interface CustomerService {
 
     void deleteCustomer(
             String customerNo
+    );
+
+    /**
+     * Soft-deletes the customer identified by the identity-service userId.
+     * Convenience for admin tools (e.g. the branch view modal) that hold the
+     * userId from an Account row but don't already know the customerNo.
+     */
+    void deleteCustomerByUserId(
+            String userId
     );
 
     void activateCustomer(

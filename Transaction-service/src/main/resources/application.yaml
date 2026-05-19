@@ -1,150 +1,20 @@
 spring:
   application:
-    name: Transaction-service
-  profiles:
-    active: dev
-  datasource:
-    url: jdbc:mysql://localhost:3306/transaction_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    # Normalised to lowercase — matches config-repo/transaction-service.yaml
+    # and aligns with the 'lb://transaction-service' route in the API gateway.
+    name: transaction-service
 
-    # HikariCP — production-grade connection pool
-    hikari:
-      pool-name: TransactionHikariPool
-      minimum-idle: 5
-      maximum-pool-size: 20
-      idle-timeout: 30000
-      connection-timeout: 20000
-      max-lifetime: 1800000
-      connection-test-query: SELECT 1
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-    open-in-view: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: true
-        use_sql_comments: true
-        jdbc:
-          batch_size: 50
-          fetch_size: 100
-        order_inserts: true
-        order_updates: true
-
-
-  jackson:
-    default-property-inclusion: non_null
-server:
-  port: 8082
-  servlet:
-    context-path: /
-  shutdown: graceful
-  tomcat:
-    threads:
-      max: 200
-      min-spare: 20
-    connection-timeout: 5000
-logging:
-  level:
-    root: INFO
-    com.cts.transactionservice: INFO
-    org.hibernate.SQL: WARN
-    org.springframework.web: WARN
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] %logger{36} - %msg%n"
-    file:    "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] %logger{36} - %msg%n"
-  file:
-    name: logs/transaction-service.log
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-    fetch-registry: true
-    register-with-eureka: true
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${server.port}
-
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-    enabled: true
-  swagger-ui:
-    path: /swagger-ui.html
-    enabled: true
-    operations-sorter: method
-    tags-sorter: alpha
-    display-request-duration: true
-    filter: true
-    try-it-out-enabled: true
-  show-actuator: false
-  packages-to-scan: com.cts.transactionservice.controller
-transaction:
-  limits:
-    max-single-amount: 500000.00
-    daily-transfer-limit: 1000000.00
-    max-daily-count: 50
-  stale-pending:
-    timeout-minutes: 30
-  reference:
-    prefix: TXN
-    max-generation-attempts: 10
-  pagination:
-    default-page-size: 20
-    max-page-size: 100
-spring.lifecycle:
-  timeout-per-shutdown-phase: 30s
-
----
-
-spring:
+  # ── Config Server import ──────────────────────────────────────────────────
+  # 'optional:' lets the service start without config-server (dev convenience).
+  # In production, set SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
   config:
-    activate:
-      on-profile: dev
-  datasource:
-    url: jdbc:mysql://localhost:3306/transaction_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:root}
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: update
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
 
-logging:
-  level:
-    com.cts.transactionservice: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql: TRACE
-
----
-spring:
-  config:
-    activate:
-      on-profile: prod
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    hikari:
-      maximum-pool-size: 50
-      minimum-idle: 10
-  jpa:
-    show-sql: false
-    hibernate:
-      ddl-auto: validate
-
-springdoc:
-  api-docs:
-    enabled: false
-  swagger-ui:
-    enabled: false
-
-logging:
-  level:
-    root: WARN
-    com.cts.transactionservice: INFO
+  cloud:
+    config:
+      fail-fast: false
+      retry:
+        max-attempts: 6
+        initial-interval: 1000
+        max-interval: 2000
+        multiplier: 1.1

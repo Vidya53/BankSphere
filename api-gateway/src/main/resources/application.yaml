@@ -1,158 +1,20 @@
-server:
-  port: 8090
-
 spring:
   application:
     name: api-gateway
 
+  # ── Config Server import ──────────────────────────────────────────────────
+  # Routes and Resilience4j circuit-breaker config live in the config-server.
+  # Without config-server the gateway starts with no routes (safe but useless).
+  # In production, set SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
+  # to enforce fail-fast — a gateway with no routes must never silently start.
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
+
   cloud:
-    gateway:
-      discovery:
-        locator:
-          enabled: false          # Routes defined explicitly below
-      routes:
-
-        # ── customer-service ────────────────────────────────────────────
-        - id: customer-service-customers
-          uri: lb://customer-service
-          predicates:
-            - Path=/customers/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: customer-service
-                fallbackUri: forward:/fallback/customer-service
-
-        - id: customer-service-kyc
-          uri: lb://customer-service
-          predicates:
-            - Path=/kyc/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: customer-service
-                fallbackUri: forward:/fallback/customer-service
-
-        # ── account-service ─────────────────────────────────────────────
-        - id: account-service-accounts
-          uri: lb://account-service
-          predicates:
-            - Path=/api/v1/accounts/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: account-service
-                fallbackUri: forward:/fallback/account-service
-
-        - id: account-service-applications
-          uri: lb://account-service
-          predicates:
-            - Path=/api/v1/account-applications/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: account-service
-                fallbackUri: forward:/fallback/account-service
-
-        - id: account-service-staff
-          uri: lb://account-service
-          predicates:
-            - Path=/api/v1/staff/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: account-service
-                fallbackUri: forward:/fallback/account-service
-
-        - id: account-service-internal
-          uri: lb://account-service
-          predicates:
-            - Path=/api/v1/internal/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: account-service
-                fallbackUri: forward:/fallback/account-service
-
-        # ── transaction-service ──────────────────────────────────────────
-        - id: transaction-service
-          uri: lb://transaction-service
-          predicates:
-            - Path=/api/v1/transactions/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: transaction-service
-                fallbackUri: forward:/fallback/transaction-service
-
-        # ── loan-service ─────────────────────────────────────────────────
-        - id: loan-service
-          uri: lb://loan-service
-          predicates:
-            - Path=/loans/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: loan-service
-                fallbackUri: forward:/fallback/loan-service
-
-        # ── identity-service ─────────────────────────────────────────────
-        - id: identity-service
-          uri: lb://identity-service
-          predicates:
-            - Path=/auth/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: identity-service
-                fallbackUri: forward:/fallback/identity-service
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-    fetch-registry: true
-    register-with-eureka: true
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${server.port}
-
-resilience4j:
-  circuitbreaker:
-    configs:
-      default:
-        slidingWindowSize: 10
-        failureRateThreshold: 50
-        waitDurationInOpenState: 60s
-        permittedNumberOfCallsInHalfOpenState: 3
-    instances:
-      customer-service:
-        baseConfig: default
-      account-service:
-        baseConfig: default
-      transaction-service:
-        baseConfig: default
-      loan-service:
-        baseConfig: default
-      identity-service:
-        baseConfig: default
-  timelimiter:
-    configs:
-      default:
-        timeoutDuration: 5s
-    instances:
-      customer-service:
-        baseConfig: default
-      account-service:
-        baseConfig: default
-      transaction-service:
-        baseConfig: default
-      loan-service:
-        baseConfig: default
-      identity-service:
-        baseConfig: default
-
-logging:
-  level:
-    org.springframework.cloud.gateway: INFO
-    com.cts.apigateway: DEBUG
+    config:
+      fail-fast: false
+      retry:
+        max-attempts: 6
+        initial-interval: 1000
+        max-interval: 2000
+        multiplier: 1.1

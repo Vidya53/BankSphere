@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(& \"C:\\\\Users\\\\2485095\\\\OneDrive - Cognizant\\\\Desktop\\\\Bank App\\\\BankSphere\\\\identity-services\\\\mvnw.cmd\" -f \"C:\\\\Users\\\\2485095\\\\OneDrive - Cognizant\\\\Desktop\\\\Bank App\\\\BankSphere\\\\identity-services\\\\pom.xml\" -q -DskipTests compile)"
+    ]
+  }
+}

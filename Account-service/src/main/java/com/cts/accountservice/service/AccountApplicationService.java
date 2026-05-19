@@ -3,7 +3,7 @@ package com.cts.accountservice.service;
 import com.cts.accountservice.dto.request.AccountApplicationRequest;
 import com.cts.accountservice.dto.request.RejectRequest;
 import com.cts.accountservice.dto.response.AccountApplicationResponse;
-import com.cts.accountservice.security.UserContext;
+import com.cts.accountservice.context.UserContext;
 
 import java.util.List;
 

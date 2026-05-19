@@ -81,6 +81,18 @@
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
+        <!-- Config Client — fetches configuration from config-server at startup -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+
+        <!-- Actuator — exposes /actuator/refresh for runtime config reload -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- OpenFeign -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -91,6 +103,24 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+        </dependency>
+
+        <!-- Kafka — async audit event publishing -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
+        <!-- Jackson JSR-310 for LocalDateTime in Kafka messages -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+
+        <!-- Spring Security — enables @PreAuthorize and header-based pre-authentication -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
         <!-- Test -->
@@ -106,6 +136,44 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- JaCoCo — line + branch coverage. Reports land in target/site/jacoco/index.html
+                 after `mvn verify`. The agent is wired before tests run so every test
+                 (unit, slice, integration) contributes to the same report. -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- DTOs / config / lombok @Builder boilerplate skew coverage numbers
+                         downwards even when business logic is fully tested. Excluding
+                         these lets the metric reflect the code that actually matters. -->
+                    <excludes>
+                        <exclude>com/cts/accountservice/dto/**</exclude>
+                        <exclude>com/cts/accountservice/entity/**</exclude>
+                        <exclude>com/cts/accountservice/enums/**</exclude>
+                        <exclude>com/cts/accountservice/AccountServiceApplication.class</exclude>
+                        <exclude>com/cts/accountservice/config/**</exclude>
+                        <exclude>com/cts/accountservice/audit/**</exclude>
+                        <exclude>com/cts/accountservice/client/dto/**</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>

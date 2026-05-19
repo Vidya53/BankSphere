@@ -16,6 +16,7 @@ public class LoanResponse {
 
     private Long loanId;
     private String customerId;
+    private String accountId;
     private String loanType;
     private Double amount;
     private Double interestRate;

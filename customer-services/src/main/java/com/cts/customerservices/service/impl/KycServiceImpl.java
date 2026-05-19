@@ -129,7 +129,23 @@ public class KycServiceImpl implements KycService {
     @Override
     @Transactional(readOnly = true)
     public List<KycResponseDTO> getPendingKyc() {
-        return repository.findByStatus(KycStatus.SUBMITTED)
+        // Pending = SUBMITTED or UNDER_REVIEW; oldest first.
+        return repository.findByStatusInOrderBySubmittedDateAsc(
+                        List.of(KycStatus.SUBMITTED, KycStatus.UNDER_REVIEW))
+                .stream()
+                .map(KycMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<KycResponseDTO> getPendingKycByBranch(String branchCode) {
+        if (branchCode == null || branchCode.isBlank()) {
+            return getPendingKyc();
+        }
+        return repository.findPendingByBranch(
+                        branchCode,
+                        List.of(KycStatus.SUBMITTED, KycStatus.UNDER_REVIEW))
                 .stream()
                 .map(KycMapper::toDTO)
                 .toList();

@@ -11,8 +11,8 @@ import lombok.*;
 @Builder
 public class FreezeAccountRequest {
 
-    @NotBlank(message = "Freeze reason is required")
-    @Size(min = 5, max = 500, message = "Reason must be between 5 and 500 characters")
+    @NotBlank(message = "A reason for freezing the account is required")
+    @Size(min = 5, max = 500, message = "Freeze reason must be between 5 and 500 characters")
     private String reason;
 }
 

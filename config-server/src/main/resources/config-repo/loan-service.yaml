@@ -1,0 +1,47 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# LOAN SERVICE CONFIGURATION
+# Port 8085 | Loan lifecycle, EMI scheduling, prepayment | calls account + customer
+# ═══════════════════════════════════════════════════════════════════════════════
+
+server:
+  port: ${LOAN_SERVICE_PORT:8085}
+
+spring:
+  datasource:
+    # Credentials + driver come from config-repo/application.yaml (shared).
+    url: ${LOAN_DB_URL:jdbc:mysql://localhost:3306/loan_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+
+# Named Resilience4j instances for account-service and customer-service Feign calls
+resilience4j:
+  circuitbreaker:
+    instances:
+      account-service:
+        baseConfig: default
+      customer-service:
+        baseConfig: default
+  timelimiter:
+    instances:
+      account-service:
+        baseConfig: default
+      customer-service:
+        baseConfig: default
+  retry:
+    instances:
+      account-service:
+        baseConfig: default
+      customer-service:
+        baseConfig: default
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    display-request-duration: true
+  paths-to-match: /loans/**
+
+logging:
+  level:
+    com.cts.loanservice: INFO

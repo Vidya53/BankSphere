@@ -1,0 +1,33 @@
+server:
+  port: ${AUDIT_SERVICE_PORT:8087}
+
+spring:
+  datasource:
+    # Credentials + driver come from config-repo/application.yaml (shared).
+    url: ${AUDIT_DB_URL:jdbc:mysql://localhost:3306/audit_compliance_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: audit-compliance-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        spring.json.trusted.packages: "com.cts.*"
+        spring.json.value.default.type: com.cts.auditservice.dto.AuditEventMessage
+
+# Kafka topic name — override per environment
+audit:
+  kafka:
+    topic: ${AUDIT_KAFKA_TOPIC:banking.audit.events}
+
+springdoc:
+  api-docs:
+    path: /audit-service/api-docs
+  swagger-ui:
+    path: /audit-service/swagger-ui.html
+
+logging:
+  level:
+    com.cts.auditservice: INFO
+    org.springframework.kafka: WARN

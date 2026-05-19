@@ -1,26 +1,57 @@
-server:
-  port: 8084
-
 spring:
   application:
     name: identity-service
 
-  datasource:
-    url: jdbc:mysql://localhost:3306/identity_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root
-    password: root
+  # ── Config Server import ──────────────────────────────────────────────────
+  # 'optional:' lets the service start without config-server (dev convenience).
+  # In production, set SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
+  # (without 'optional:') so startup fails fast if config-server is unreachable.
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
+  cloud:
+    config:
+      # fail-fast: true → refuse to start if config-server is unreachable.
+      # Set via environment variable in production:  SPRING_CLOUD_CONFIG_FAIL_FAST=true
+      fail-fast: false
+      retry:
+        max-attempts: 6
+        initial-interval: 1000
+        max-interval: 2000
+        multiplier: 1.1
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-    fetch-registry: true
-    register-with-eureka: true
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${server.port}
+  # ── Mail (password-reset OTP) ─────────────────────────────────────────────
+  # These defaults exist here as a fallback so the JavaMailSender bean is
+  # created even when config-server is unreachable. The same keys in
+  # config-repo/identity-service.yaml override them when config-server is up.
+  # For dev with no real SMTP creds, the password reset service falls back
+  # to logging the OTP to the console — no email is actually sent.
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    # ⚠ DEV ONLY — fallback credentials hard-coded here so SMTP works without
+    # environment variables. Replace with env vars or revert the defaults
+    # before committing to a shared repo.
+    username: ${SMTP_USERNAME:vijjulubobby@gmail.com}
+    password: ${SMTP_PASSWORD:oxkqldyjhuxsnpcx}
+    # `mail.debug=true` dumps the full SMTP conversation to stdout — useful when
+    # diagnosing auth issues. Turn off in production by setting MAIL_DEBUG=false.
+    properties:
+      mail:
+        debug: ${MAIL_DEBUG:true}
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: ${SMTP_CONNECT_TIMEOUT:30000}
+          timeout:           ${SMTP_READ_TIMEOUT:30000}
+          writetimeout:      ${SMTP_WRITE_TIMEOUT:30000}
+
+password-reset:
+  otp-expiry-minutes:   ${PASSWORD_RESET_OTP_EXPIRY:10}
+  token-expiry-minutes: ${PASSWORD_RESET_TOKEN_EXPIRY:15}
+  max-attempts:         ${PASSWORD_RESET_MAX_ATTEMPTS:5}
+  # ⚠ DEV ONLY — must match SMTP_USERNAME above so Gmail accepts the From header.
+  mail-from:            ${PASSWORD_RESET_MAIL_FROM:vijjulubobby@gmail.com}
+  mail-from-name:       ${PASSWORD_RESET_MAIL_FROM_NAME:BankSphere}

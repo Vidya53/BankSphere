@@ -1,0 +1,40 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# PROD PROFILE — shared overrides for all services when spring.profiles.active=prod
+# ═══════════════════════════════════════════════════════════════════════════════
+
+spring:
+  jpa:
+    show-sql: false
+    hibernate:
+      # Never auto-create or alter schema in production; use Flyway migrations
+      ddl-auto: validate
+
+# Tighter circuit-breaker thresholds for production load
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 20
+        failureRateThreshold: 40
+        waitDurationInOpenState: 90s
+        permittedNumberOfCallsInHalfOpenState: 5
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
+  retry:
+    configs:
+      default:
+        maxAttempts: 5
+        waitDuration: 1000ms
+
+management:
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: WARN
+    com.cts: INFO
+    org.hibernate.SQL: WARN

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title th:text="${subject}">Notification</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f9;padding:20px 0;">
+  <tr>
+    <td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#1a3c6b 0%,#2563a8 100%);padding:28px 40px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td>
+                  <span style="color:#ffffff;font-size:24px;font-weight:bold;letter-spacing:1px;">🏦 BankSphere</span>
+                </td>
+                <td align="right">
+                  <span style="color:rgba(255,255,255,0.8);font-size:12px;">Secure Banking</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="padding:40px;">
+            <h2 style="color:#1a3c6b;margin:0 0 20px 0;font-size:20px;" th:text="${subject}">Notification</h2>
+            <p style="color:#444444;font-size:15px;line-height:1.7;margin:0 0 24px 0;" th:text="${body}">Message body goes here.</p>
+
+            <div style="background:#f0f4ff;border-left:4px solid #2563a8;padding:16px 20px;border-radius:4px;margin:24px 0;">
+              <p style="margin:0;color:#555;font-size:13px;">
+                If you did not expect this notification or believe it was sent in error, please contact our support immediately at
+                <a href="mailto:support@banksphere.com" style="color:#2563a8;">support@banksphere.com</a> or call
+                <strong>1800-XXX-XXXX</strong> (24/7).
+              </p>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#f8f9fb;padding:24px 40px;border-top:1px solid #e8ecf0;">
+            <p style="color:#888;font-size:12px;margin:0 0 8px 0;text-align:center;">
+              This is an automated message from BankSphere. Please do not reply to this email.
+            </p>
+            <p style="color:#aaa;font-size:11px;margin:0;text-align:center;">
+              © 2024 BankSphere Financial Services Ltd. | Registered &amp; regulated by RBI |
+              <a href="#" style="color:#aaa;">Privacy Policy</a> |
+              <a href="#" style="color:#aaa;">Unsubscribe</a>
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

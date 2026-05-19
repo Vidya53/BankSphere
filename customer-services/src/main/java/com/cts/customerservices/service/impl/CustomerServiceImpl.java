@@ -1,6 +1,7 @@
 package com.cts.customerservices.service.impl;
 
 
+import com.cts.customerservices.client.AccountServiceClient;
 import com.cts.customerservices.client.BranchClient;
 import com.cts.customerservices.dto.CustomerRequestDTO;
 import com.cts.customerservices.dto.CustomerResponseDTO;
@@ -36,10 +37,11 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository repository;
     private final KycRepository kycRepository;
     private final BranchClient branchClient;
+    private final AccountServiceClient accountServiceClient;
 
     @Override
     @Transactional
-    public CustomerResponseDTO registerCustomer(CustomerRequestDTO request) {
+    public CustomerResponseDTO registerCustomer(CustomerRequestDTO request, String userId) {
         log.info("Registering new customer with email: {}", request.getEmail());
 
         validateBranch(request.getBranchCode());
@@ -49,6 +51,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         String customerNo = CustomerUtil.generateCustomerNo();
         Customer customer = CustomerMapper.toEntity(request, customerNo);
+        customer.setUserId(userId);
         repository.save(customer);
 
         log.info("Customer registered successfully with customerNo: {}", customerNo);
@@ -111,6 +114,55 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public CustomerResponseDTO getMyProfile(String userId) {
+        log.debug("Fetching profile for userId: {}", userId);
+        Customer customer = repository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("No customer profile exists for userId: " + userId));
+        checkNotDeleted(customer);
+        return CustomerMapper.toDTO(customer);
+    }
+
+    @Override
+    @Transactional
+    public CustomerResponseDTO updateMyProfile(String userId, CustomerRequestDTO request) {
+        log.info("Updating profile for userId: {}", userId);
+        Customer customer = repository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("No customer profile exists for userId: " + userId));
+        checkNotDeleted(customer);
+
+        if (customer.getStatus() == CustomerStatus.CLOSED) {
+            throw new BusinessException("Cannot update a CLOSED customer account");
+        }
+
+        // Editable fields — identity fields (DOB, gender, customerNo) are immutable post-creation.
+        // Optional string fields are normalised to null when blank, otherwise the entity-level
+        // @Pattern validators (e.g. on alternateMobileNumber) reject the empty string and surface
+        // as a 500 from the save path.
+        customer.setFirstName(request.getFirstName());
+        customer.setLastName(request.getLastName());
+        customer.setMobileNumber(request.getMobileNumber());
+        customer.setAlternateMobileNumber(nullIfBlank(request.getAlternateMobileNumber()));
+        customer.setAddressLine1(request.getAddressLine1());
+        customer.setAddressLine2(nullIfBlank(request.getAddressLine2()));
+        customer.setCity(request.getCity());
+        customer.setState(request.getState());
+        customer.setPostalCode(request.getPostalCode());
+        customer.setCountry(request.getCountry());
+        customer.setIncomeAmount(request.getIncomeAmount());
+        customer.setUpdatedAt(LocalDateTime.now());
+        customer.setUpdatedBy(userId);
+
+        repository.save(customer);
+        log.info("Profile {} (userId={}) updated", customer.getCustomerNo(), userId);
+        return CustomerMapper.toDTO(customer);
+    }
+
+    private static String nullIfBlank(String value) {
+        return (value == null || value.isBlank()) ? null : value;
+    }
+
+    @Override
     @Transactional
     public CustomerResponseDTO updateCustomer(String customerNo, CustomerRequestDTO request) {
         log.info("Updating customer: {}", customerNo);
@@ -147,17 +199,46 @@ public class CustomerServiceImpl implements CustomerService {
             throw new CustomerDeletedException(customerNo);
         }
 
-        if (customer.getStatus() == CustomerStatus.ACTIVE) {
-            throw new BusinessException("Cannot delete an ACTIVE customer. Please deactivate the account first.");
-        }
-
+        // Soft delete is privileged (ADMIN / BRANCH_MANAGER). Admins shouldn't
+        // be forced into a two-step "deactivate then delete" flow — flip the
+        // status here, then cascade-close every account the customer owns.
         customer.setIsDeleted(true);
         customer.setStatus(CustomerStatus.CLOSED);
         customer.setUpdatedAt(LocalDateTime.now());
         customer.setUpdatedBy("SYSTEM");
         customer.setRemarks("Soft deleted on " + LocalDateTime.now());
         repository.save(customer);
+
+        // Cascade: close every account this customer holds. account-service is
+        // the source of truth for account state; this stops transfers + loan
+        // disbursements working under a deleted customer.
+        if (customer.getUserId() != null && !customer.getUserId().isBlank()) {
+            try {
+                int closed = accountServiceClient.closeAllAccountsForCustomer(
+                        customer.getUserId(),
+                        "Customer soft-deleted (" + customerNo + ")",
+                        "SYSTEM");
+                log.info("Cascade closed {} account(s) for customer {} (userId={})",
+                        closed, customerNo, customer.getUserId());
+            } catch (Exception ex) {
+                // Fallback already logs; we deliberately don't fail the delete.
+                log.warn("Account cascade-close failed for customer {} — manual reconciliation required: {}",
+                        customerNo, ex.getMessage());
+            }
+        } else {
+            log.warn("Customer {} has no userId — skipping account cascade-close.", customerNo);
+        }
+
         log.info("Customer {} soft deleted successfully", customerNo);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCustomerByUserId(String userId) {
+        log.info("Soft deleting customer by userId: {}", userId);
+        Customer customer = repository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException("Customer not found for userId: " + userId));
+        deleteCustomer(customer.getCustomerNo());
     }
 
     @Override

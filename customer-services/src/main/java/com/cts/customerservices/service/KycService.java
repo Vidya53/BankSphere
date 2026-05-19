@@ -31,4 +31,7 @@ public interface KycService {
 
     List<KycResponseDTO> getRejectedKyc();
 
+    /** All pending KYCs (SUBMITTED + UNDER_REVIEW) for a specific branch. */
+    List<KycResponseDTO> getPendingKycByBranch(String branchCode);
+
 }

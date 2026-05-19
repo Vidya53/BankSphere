@@ -46,6 +46,9 @@ public class CustomerResponseDTO {
 
     private CustomerStatus status;
 
+    /** True when the customer has been soft-deleted by admin or branch manager. */
+    private Boolean isDeleted;
+
     private RiskCategory riskCategory;
 
     private Double incomeAmount;

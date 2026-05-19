@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Smooth theme transitions for backgrounds, borders, and fills.
+     Limited to specific properties so layout/transform animations
+     aren't disrupted. */
+  html, body, *, *::before, *::after {
+    transition:
+      background-color 250ms ease,
+      border-color 250ms ease,
+      fill 250ms ease,
+      stroke 250ms ease,
+      color 200ms ease,
+      box-shadow 200ms ease;
+  }
+
+  body {
+    @apply font-sans bg-white text-accent-ink dark:bg-ink-900 dark:text-ink-100;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight dark:text-ink-50;
+  }
+  ::selection {
+    background-color: #97144D;
+    color: white;
+  }
+}
+
+@layer components {
+  .container-wide {
+    @apply mx-auto w-full max-w-[1400px] px-6;
+  }
+  .container-narrow {
+    @apply mx-auto w-full max-w-[1100px] px-6;
+  }
+
+  /* ── Buttons ──────────────────────────────────────────────────────────── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply dark:focus:ring-offset-ink-900;
+  }
+  .btn-primary {
+    @apply btn bg-brand-700 text-white hover:bg-brand-800 focus:ring-brand-500 shadow-sm;
+    @apply dark:bg-brand-600 dark:hover:bg-brand-500 dark:focus:ring-brand-400;
+  }
+  .btn-secondary {
+    @apply btn bg-white text-brand-700 border border-brand-200 hover:bg-brand-50 focus:ring-brand-300;
+    @apply dark:bg-ink-800 dark:text-brand-300 dark:border-ink-700 dark:hover:bg-ink-750 dark:focus:ring-brand-500;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-accent-ink hover:bg-accent-line/60;
+    @apply dark:text-ink-100 dark:hover:bg-ink-800;
+  }
+  .btn-danger {
+    @apply btn bg-accent-danger text-white hover:bg-red-700;
+    @apply dark:bg-red-700 dark:hover:bg-red-600;
+  }
+
+  /* ── Cards ────────────────────────────────────────────────────────────── */
+  .card {
+    @apply bg-white border border-accent-line rounded-xl2 shadow-card;
+    @apply dark:bg-ink-800 dark:border-ink-700 dark:shadow-cardDark;
+  }
+  .card-hover {
+    @apply card transition hover:shadow-cardHover hover:-translate-y-0.5;
+    @apply dark:hover:shadow-cardHoverDark dark:hover:border-ink-600;
+  }
+
+  /* ── Form fields ──────────────────────────────────────────────────────── */
+  .input {
+    @apply block w-full rounded-lg border border-accent-line bg-white px-4 py-2.5 text-sm text-accent-ink placeholder:text-accent-mute focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent disabled:bg-accent-surface;
+    @apply dark:bg-ink-750 dark:border-ink-700 dark:text-ink-100 dark:placeholder:text-ink-400 dark:focus:ring-brand-400 dark:disabled:bg-ink-800;
+  }
+  .label {
+    @apply block text-sm font-medium text-accent-slate mb-1.5;
+    @apply dark:text-ink-200;
+  }
+
+  /* ── Misc ─────────────────────────────────────────────────────────────── */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium;
+  }
+  .link {
+    @apply text-brand-700 hover:text-brand-800 hover:underline underline-offset-2 transition;
+    @apply dark:text-brand-300 dark:hover:text-brand-200;
+  }
+  .divider {
+    @apply h-px w-full bg-accent-line dark:bg-ink-700;
+  }
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2;
+    @apply dark:focus:ring-brand-400 dark:focus:ring-offset-ink-900;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .animate-fadeSlideDown {
+    animation: fadeSlideDown 180ms ease-out;
+  }
+  .animate-fadeIn {
+    animation: fadeIn 200ms ease-out;
+  }
+}
+
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Scrollbar — light + dark variants */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #2d2d36;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3f3f4a;
+}
+
+/* Firefox */
+* { scrollbar-color: #d4d4d4 transparent; scrollbar-width: thin; }
+.dark * { scrollbar-color: #2d2d36 transparent; }

@@ -2,81 +2,17 @@ spring:
   application:
     name: account-service
 
-  datasource:
-    url: jdbc:mysql://localhost:3306/account_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
+  # ── Config Server import ──────────────────────────────────────────────────
+  # 'optional:' lets the service start without config-server (dev convenience).
+  # In production, set SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: true
-
-server:
-  port: 8083
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-    fetch-registry: true
-    register-with-eureka: true
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${server.port}
-
-banking:
-  high-value-threshold: 100000.00
-
-feign:
-  circuitbreaker:
-    enabled: true
-  client:
+  cloud:
     config:
-      default:
-        connectTimeout: 3000
-        readTimeout: 3000
-
-resilience4j:
-  circuitbreaker:
-    configs:
-      default:
-        slidingWindowSize: 10
-        failureRateThreshold: 50
-        waitDurationInOpenState: 60s
-        permittedNumberOfCallsInHalfOpenState: 3
-    instances:
-      customer-service:
-        baseConfig: default
-  timelimiter:
-    configs:
-      default:
-        timeoutDuration: 3s
-    instances:
-      customer-service:
-        baseConfig: default
-  retry:
-    configs:
-      default:
-        maxAttempts: 3
-        waitDuration: 500ms
-    instances:
-      customer-service:
-        baseConfig: default
-
-logging:
-  level:
-    com.cts.accountservice: DEBUG
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
+      fail-fast: false
+      retry:
+        max-attempts: 6
+        initial-interval: 1000
+        max-interval: 2000
+        multiplier: 1.1

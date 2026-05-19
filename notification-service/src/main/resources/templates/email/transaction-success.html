@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Transaction Successful — BankSphere</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f9;padding:20px 0;">
+  <tr><td align="center">
+  <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+
+    <tr>
+      <td style="background:linear-gradient(135deg,#1a3c6b 0%,#2563a8 100%);padding:28px 40px;">
+        <span style="color:#fff;font-size:24px;font-weight:bold;">🏦 BankSphere</span>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:40px;">
+        <p style="color:#333;font-size:16px;margin:0 0 20px;">
+          Dear <strong th:text="${customerName ?: 'Valued Customer'}">Customer</strong>,
+        </p>
+
+        <!-- Transaction summary card -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4ff;border-radius:8px;margin-bottom:24px;">
+          <tr><td style="padding:24px;">
+            <p style="margin:0 0 16px;color:#1a3c6b;font-size:16px;font-weight:bold;">Transaction Details</p>
+            <table width="100%" cellpadding="6" cellspacing="0">
+              <tr>
+                <td style="color:#666;font-size:13px;">Amount</td>
+                <td style="color:#1a3c6b;font-size:20px;font-weight:bold;" th:text="${'₹' + (amount ?: '0.00')}">₹5,000.00</td>
+              </tr>
+              <tr><td style="border-top:1px solid #dde5f5;" colspan="2"></td></tr>
+              <tr>
+                <td style="color:#666;font-size:13px;padding-top:8px;">Transaction ID</td>
+                <td style="color:#333;font-size:13px;font-family:monospace;padding-top:8px;" th:text="${txnId ?: '—'}">TXN000001</td>
+              </tr>
+              <tr>
+                <td style="color:#666;font-size:13px;">Account</td>
+                <td style="color:#333;font-size:13px;font-family:monospace;" th:text="${accountNo ?: '—'}">ACC000001</td>
+              </tr>
+              <tr>
+                <td style="color:#666;font-size:13px;">Type</td>
+                <td style="color:#333;font-size:13px;" th:text="${txnType ?: 'Transfer'}">NEFT Transfer</td>
+              </tr>
+              <tr>
+                <td style="color:#666;font-size:13px;">Date &amp; Time</td>
+                <td style="color:#333;font-size:13px;" th:text="${txnDate ?: '—'}">01 Jan 2024, 10:30 AM</td>
+              </tr>
+              <tr><td style="border-top:1px solid #dde5f5;" colspan="2"></td></tr>
+              <tr>
+                <td style="color:#666;font-size:13px;padding-top:8px;font-weight:bold;">Available Balance</td>
+                <td style="color:#28a745;font-size:16px;font-weight:bold;padding-top:8px;" th:text="${'₹' + (balance ?: '—')}">₹45,000.00</td>
+              </tr>
+            </table>
+          </td></tr>
+        </table>
+
+        <div style="background:#fff3cd;border-left:4px solid #ffc107;padding:14px 18px;border-radius:4px;font-size:13px;color:#856404;">
+          If this transaction was not done by you, call <strong>1800-XXX-XXXX</strong> immediately to block your account.
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="background:#f8f9fb;padding:24px 40px;border-top:1px solid #e8ecf0;">
+        <p style="color:#888;font-size:12px;margin:0;text-align:center;">
+          © 2024 BankSphere Financial Services Ltd. | Regulated by RBI
+        </p>
+      </td>
+    </tr>
+
+  </table>
+  </td></tr>
+</table>
+</body>
+</html>

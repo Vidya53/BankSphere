@@ -37,6 +37,8 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     @Query("SELECT a FROM Account a WHERE a.branchCode = :branchCode AND a.balance < :minBalance AND a.status = 'ACTIVE'")
     List<Account> findLowBalanceAccounts(@Param("branchCode") String branchCode, @Param("minBalance") BigDecimal minBalance);
 
+    long countByBranchCode(String branchCode);
+
     @Query("SELECT COUNT(a) FROM Account a WHERE a.branchCode = :branchCode AND a.status = :status")
     long countByBranchCodeAndStatus(@Param("branchCode") String branchCode, @Param("status") AccountStatus status);
 
@@ -55,5 +57,143 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     @Modifying
     @Query("UPDATE Account a SET a.balance = a.balance - :amount WHERE a.accountNo = :accountNo AND a.status = 'ACTIVE' AND a.balance >= :amount")
     int debitAccount(@Param("accountNo") String accountNo, @Param("amount") BigDecimal amount);
+
+    // ── Active-only lookups (used by transaction flow) ──────────────────────
+
+    @Query("SELECT a FROM Account a WHERE a.accountNo = :accountNo AND a.status = 'ACTIVE'")
+    Optional<Account> findActiveByAccountNo(@Param("accountNo") String accountNo);
+
+    @Query("""
+        SELECT a FROM Account a
+        WHERE a.accountNo = :accountNo
+          AND a.customerId = :customerId
+          AND a.status = 'ACTIVE'
+        """)
+    Optional<Account> findActiveOwnedAccount(@Param("accountNo")  String accountNo,
+                                             @Param("customerId") String customerId);
+
+    /** Atomic debit that respects the account's minimumBalance floor. */
+    @Modifying
+    @Query("""
+        UPDATE Account a
+           SET a.balance = a.balance - :amount
+         WHERE a.accountNo = :accountNo
+           AND a.status = 'ACTIVE'
+           AND a.balance - :amount >= a.minimumBalance
+        """)
+    int debitRespectingMinimum(@Param("accountNo") String accountNo,
+                               @Param("amount")    BigDecimal amount);
+
+    // ── PIN attempt counters ────────────────────────────────────────────────
+    @Modifying
+    @Query("UPDATE Account a SET a.pinFailedAttempts = a.pinFailedAttempts + 1 WHERE a.accountNo = :accountNo")
+    int incrementPinAttempts(@Param("accountNo") String accountNo);
+
+    @Modifying
+    @Query("""
+        UPDATE Account a
+           SET a.pinFailedAttempts = 0,
+               a.pinLockedUntil    = null
+         WHERE a.accountNo = :accountNo
+        """)
+    int resetPinAttempts(@Param("accountNo") String accountNo);
+
+    @Modifying
+    @Query("UPDATE Account a SET a.pinLockedUntil = :until WHERE a.accountNo = :accountNo")
+    int lockPinUntil(@Param("accountNo") String accountNo,
+                     @Param("until")     java.time.LocalDateTime until);
+
+    // ── Branch-scoped lookups for CSR cash operations ───────────────────────
+
+    /** Look up an active account that belongs to the staff member's branch. */
+    @Query("""
+        SELECT a FROM Account a
+        WHERE a.accountNo  = :accountNo
+          AND a.branchCode = :branchCode
+          AND a.status     = 'ACTIVE'
+        """)
+    Optional<Account> findActiveByAccountNoAndBranch(@Param("accountNo")  String accountNo,
+                                                    @Param("branchCode") String branchCode);
+
+    /** Atomic credit that also enforces the account is ACTIVE and transactional. */
+    @Modifying
+    @Query("""
+        UPDATE Account a
+           SET a.balance = a.balance + :amount
+         WHERE a.accountNo       = :accountNo
+           AND a.status          = 'ACTIVE'
+           AND a.isTransactional = true
+        """)
+    int safeCredit(@Param("accountNo") String accountNo,
+                   @Param("amount")    BigDecimal amount);
+
+    // ── Branch-scoped analytics (branch manager dashboard) ──────────────────
+
+    @Query("""
+        SELECT COUNT(a) FROM Account a
+        WHERE a.branchCode = :branchCode AND a.openedAt BETWEEN :from AND :to
+        """)
+    long countOpenedInBranchBetween(@Param("branchCode") String branchCode,
+                                    @Param("from")       java.time.LocalDateTime from,
+                                    @Param("to")         java.time.LocalDateTime to);
+
+    @Query("""
+        SELECT FUNCTION('DATE', a.openedAt), COUNT(a) FROM Account a
+        WHERE a.branchCode = :branchCode AND a.openedAt BETWEEN :from AND :to
+        GROUP BY FUNCTION('DATE', a.openedAt)
+        ORDER BY FUNCTION('DATE', a.openedAt)
+        """)
+    List<Object[]> dailyOpenedByBranch(@Param("branchCode") String branchCode,
+                                       @Param("from")       java.time.LocalDateTime from,
+                                       @Param("to")         java.time.LocalDateTime to);
+
+    // ── Analytics aggregations ──────────────────────────────────────────────
+
+    @Query("SELECT COUNT(a) FROM Account a")
+    long countAll();
+
+    @Query("SELECT COALESCE(SUM(a.balance), 0) FROM Account a WHERE a.status = 'ACTIVE'")
+    BigDecimal totalBalanceOfActiveAccounts();
+
+    @Query("SELECT a.status, COUNT(a) FROM Account a GROUP BY a.status")
+    List<Object[]> countByStatusGrouped();
+
+    @Query("""
+        SELECT a.accountType, COUNT(a), COALESCE(SUM(a.balance), 0)
+        FROM Account a WHERE a.status = 'ACTIVE'
+        GROUP BY a.accountType
+        """)
+    List<Object[]> aggregateByTypeActive();
+
+    // Admin branch view — accounts grouped by type, with distinct-customer counts
+    // and total balance. Used by the "view branch" modal on the admin dashboard.
+    @Query("""
+        SELECT a.accountType,
+               COUNT(DISTINCT a.customerId),
+               COUNT(a),
+               COALESCE(SUM(a.balance), 0)
+        FROM Account a
+        WHERE a.branchCode = :branchCode
+        GROUP BY a.accountType
+        """)
+    List<Object[]> accountTypeBreakdownByBranch(@Param("branchCode") String branchCode);
+
+    // Cascade-close all of a customer's accounts when the customer is soft-deleted
+    // by admin or branch manager. CLOSED accounts cannot transact, which is the
+    // intended downstream effect: transfers and loan disbursements stop working.
+    @Modifying
+    @Query("""
+        UPDATE Account a
+           SET a.status = com.cts.accountservice.enums.AccountStatus.CLOSED,
+               a.isTransactional = false,
+               a.closedAt   = CURRENT_TIMESTAMP,
+               a.closeReason = :reason,
+               a.closedBy   = :closedBy
+         WHERE a.customerId = :customerId
+           AND a.status     <> com.cts.accountservice.enums.AccountStatus.CLOSED
+        """)
+    int closeAllAccountsForCustomer(@Param("customerId") String customerId,
+                                    @Param("reason")     String reason,
+                                    @Param("closedBy")   String closedBy);
 }
 

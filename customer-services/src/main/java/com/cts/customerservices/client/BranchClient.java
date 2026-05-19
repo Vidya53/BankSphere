@@ -1,24 +1,16 @@
 package com.cts.customerservices.client;
-import org.springframework.stereotype.Component;
 
-@Component
-public class BranchClient {
+import com.cts.customerservices.client.fallback.BranchClientFallback;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
-    public boolean isBranchActive(String ifscCode) {
+@FeignClient(
+        name = "branch-service",
+        fallback = BranchClientFallback.class
+)
+public interface BranchClient {
 
-        /*
-        In real system this will call:
-
-        Branch Service API
-
-        GET /branches/{ifsc}/status
-        */
-
-        if (ifscCode == null)
-            return false;
-
-        return ifscCode.startsWith("SBIN");
-
-    }
-
+    @GetMapping("/api/v1/internal/branches/{branchCode}/active")
+    boolean isBranchActive(@PathVariable("branchCode") String branchCode);
 }

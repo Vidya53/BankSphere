@@ -6,11 +6,12 @@ import lombok.Data;
 @Data
 public class LoanApplicationRequest {
     @NotBlank(message = "Customer number is required")
+    @Pattern(regexp = "^CUST-[A-Z0-9]{8}$", message = "Customer number must be in the format CUST-XXXXXXXX")
     private String customerNo;
 
     @NotNull(message = "Requested amount is required")
-    @Min(value = 10000, message = "Minimum loan amount is ₹10,000")
-    @Max(value = 100000000, message = "Maximum loan amount is ₹10,00,00,000")
+    @DecimalMin(value = "10000.00", message = "Minimum loan amount is 10,000")
+    @DecimalMax(value = "100000000.00", message = "Maximum loan amount is 10,00,00,000")
     private Double requestedAmount;
 
     @NotNull(message = "Repayment duration is required")

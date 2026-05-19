@@ -1,0 +1,72 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# IDENTITY SERVICE CONFIGURATION
+# Port 8084 | Signup / login / staff management | Issues signed JWTs
+# ═══════════════════════════════════════════════════════════════════════════════
+
+server:
+  port: ${IDENTITY_SERVICE_PORT:8084}
+
+spring:
+  datasource:
+    # Credentials + driver come from config-repo/application.yaml (shared).
+    url: ${IDENTITY_DB_URL:jdbc:mysql://localhost:3306/identity_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+
+  # ── Mail (used for password-reset OTPs) ─────────────────────────────────
+  # For Gmail/dev: create an App Password at myaccount.google.com → Security.
+  # For prod: use SendGrid / SES / Mailgun SMTP relay.
+  # The reset endpoint logs the OTP at INFO level on send-failure so dev
+  # testing works even without a working SMTP relay.
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    # ⚠ DEV ONLY — fallback credentials hard-coded here so SMTP works without
+    # environment variables. Config-server overrides local application.yaml,
+    # so both files must carry the same defaults. Replace with env vars or
+    # revert before committing to a shared repo.
+    username: ${SMTP_USERNAME:vijjulubobby@gmail.com}
+    password: ${SMTP_PASSWORD:oxkqldyjhuxsnpcx}
+    properties:
+      mail:
+        debug: ${MAIL_DEBUG:true}
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: ${SMTP_CONNECT_TIMEOUT:30000}
+          timeout:           ${SMTP_READ_TIMEOUT:30000}
+          writetimeout:      ${SMTP_WRITE_TIMEOUT:30000}
+
+password-reset:
+  otp-expiry-minutes:   ${PASSWORD_RESET_OTP_EXPIRY:10}
+  token-expiry-minutes: ${PASSWORD_RESET_TOKEN_EXPIRY:15}
+  max-attempts:         ${PASSWORD_RESET_MAX_ATTEMPTS:5}
+  # ⚠ DEV ONLY — must match SMTP_USERNAME above so Gmail accepts the From header.
+  mail-from:            ${PASSWORD_RESET_MAIL_FROM:vijjulubobby@gmail.com}
+  mail-from-name:       ${PASSWORD_RESET_MAIL_FROM_NAME:BankSphere}
+
+jwt:
+  # Base64-encoded HMAC-SHA256 key — minimum 256 bits (44 Base64 chars)
+  # Set JWT_SECRET env var in all environments. Never commit the real value to source control.
+  secret: ${JWT_SECRET:bXlTdXBlclNlY3JldEtleUZvckJhbmtTcGhlcmVBcHBsaWNhdGlvbjEyMw==}
+
+  # Short-lived access token — gateway validates this statlessly on every request.
+  # Keep short (≤ 15 min) to limit the window if a token is stolen.
+  access-token-expiration-ms: ${JWT_ACCESS_TOKEN_EXPIRATION_MS:900000}    # 15 min
+
+  # Long-lived opaque refresh token — stored hashed in DB, single-use, revocable.
+  refresh-token-expiration-ms: ${JWT_REFRESH_TOKEN_EXPIRATION_MS:604800000}  # 7 days
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    display-request-duration: true
+  paths-to-match: /auth/**,/api/v1/admin/**
+
+logging:
+  level:
+    com.cts.identityservices: INFO

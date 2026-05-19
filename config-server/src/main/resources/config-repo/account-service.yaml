@@ -1,0 +1,71 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# ACCOUNT SERVICE CONFIGURATION
+# Port 8083 | Account lifecycle, branch operations | calls customer-service via Feign
+# ═══════════════════════════════════════════════════════════════════════════════
+
+server:
+  port: ${ACCOUNT_SERVICE_PORT:8083}
+
+spring:
+  datasource:
+    # Credentials + driver come from config-repo/application.yaml (shared).
+    url: ${ACCOUNT_DB_URL:jdbc:mysql://localhost:3306/account_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+        enable.idempotence: true
+        acks: all
+        retries: 3
+
+# Business rule threshold — externalized so compliance teams can adjust
+# without a code deployment
+banking:
+  high-value-threshold: ${BANKING_HIGH_VALUE_THRESHOLD:100000.00}
+
+# Named Resilience4j instances for downstream Feign calls
+resilience4j:
+  circuitbreaker:
+    instances:
+      customer-service:
+        baseConfig: default
+      branch-service:
+        baseConfig: default
+  timelimiter:
+    instances:
+      customer-service:
+        baseConfig: default
+      branch-service:
+        baseConfig: default
+  retry:
+    instances:
+      customer-service:
+        baseConfig: default
+      branch-service:
+        baseConfig: default
+
+# Kafka topic names — must match what consumer services expect
+audit:
+  kafka:
+    topic: ${AUDIT_KAFKA_TOPIC:banking.audit.events}
+
+notification:
+  kafka:
+    topic: ${NOTIFICATION_KAFKA_TOPIC:banking.notification.events}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    display-request-duration: true
+
+logging:
+  level:
+    com.cts.accountservice: INFO

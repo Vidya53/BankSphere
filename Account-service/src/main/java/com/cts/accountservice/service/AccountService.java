@@ -4,7 +4,8 @@ import com.cts.accountservice.dto.request.CloseAccountRequest;
 import com.cts.accountservice.dto.request.FreezeAccountRequest;
 import com.cts.accountservice.dto.response.AccountResponse;
 import com.cts.accountservice.dto.response.BranchAccountSummary;
-import com.cts.accountservice.security.UserContext;
+import com.cts.accountservice.dto.response.BranchAccountTypeBreakdown;
+import com.cts.accountservice.context.UserContext;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -24,6 +25,15 @@ public interface AccountService {
     AccountResponse closeAccount(String accountNo, CloseAccountRequest request, UserContext staffContext);
 
     BranchAccountSummary getBranchSummary(String branchCode);
+
+    List<BranchAccountTypeBreakdown> getBranchAccountTypeBreakdown(String branchCode);
+
+    /**
+     * Cascade-close every account belonging to the given customer (identity
+     * userId). Called by customer-service when an admin or branch manager
+     * soft-deletes the customer. Returns the number of accounts closed.
+     */
+    int closeAllAccountsForCustomer(String customerId, String reason, String closedBy);
 
     // Internal endpoints for transaction-service
     boolean isAccountActive(String accountNo);

@@ -4,6 +4,8 @@ import com.cts.customerservices.enums.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,6 +26,9 @@ public class Customer {
     @NotBlank(message = "Customer number is mandatory")
     @Column(unique = true)
     private String customerNo;
+
+    @Column(unique = true)
+    private String userId;
 
     @NotBlank(message = "First name is required")
     @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
@@ -83,8 +88,13 @@ public class Customer {
     @Enumerated(EnumType.STRING)
     private RiskCategory riskCategory;
 
+    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
+
     private String createdBy;
     private String updatedBy;
     private String remarks;

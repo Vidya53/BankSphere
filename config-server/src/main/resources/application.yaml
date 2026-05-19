@@ -1,0 +1,66 @@
+server:
+  port: ${CONFIG_SERVER_PORT:8888}
+
+spring:
+  application:
+    name: config-server
+
+  # Backend selection:
+  # - native → local/dev (configs inside classpath)
+  # - git    → real environments (GitHub repo)
+  profiles:
+    active: ${CONFIG_BACKEND:native}
+
+  cloud:
+    config:
+      server:
+
+        # ───────────── Local / Dev (Native backend) ─────────────
+        # Used only if CONFIG_BACKEND=native
+        native:
+          search-locations: classpath:/config-repo/
+
+        # ───────────── Git Backend (Recommended) ─────────────
+        # This points to the repo where you already placed:
+        # application.yml, application-dev.yml,
+        # identity-service.yml, account-service.yml, etc.
+        git:
+          uri: https://github.com/AnkitRaj2485/banksphere-config-repo.git
+          default-label: ${CONFIG_GIT_BRANCH:main}
+          search-paths: application
+          clone-on-start: true
+          force-pull: true
+          timeout: 10
+
+          # Optional (only if repo is private)
+          username: ${CONFIG_GIT_USERNAME:}
+          password: ${CONFIG_GIT_TOKEN:}
+
+# ───────────── Eureka Registration ─────────────
+# Config Server registers itself so it can be monitored
+# BUT client services should still hit it via URL, not discovery
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+    register-with-eureka: true
+    fetch-registry: false
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+# ───────────── Actuator ─────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env
+  endpoint:
+    health:
+      show-details: always
+
+# ───────────── Logging ─────────────
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.config.server: INFO

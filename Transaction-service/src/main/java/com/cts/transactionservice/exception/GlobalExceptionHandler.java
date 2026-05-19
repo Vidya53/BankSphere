@@ -1,12 +1,14 @@
 package com.cts.transactionservice.exception;
 
 import com.cts.transactionservice.dto.response.ApiResponse;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -82,11 +84,29 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiResponse<Void>> handleUnreadableMessage(
+    public ResponseEntity<ApiResponse<Void>> handleUnreadable(
             HttpMessageNotReadableException ex) {
         log.warn("Malformed request body: {}", ex.getMessage());
         return buildError(HttpStatus.BAD_REQUEST, "Malformed request body",
                 "Request body could not be parsed. Check JSON syntax and enum values.");
+    }
+
+    /** Bean-validation failures on path / query / single-arg parameters (e.g. @NotBlank on a @PathVariable). */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleConstraintViolation(ConstraintViolationException ex) {
+        String detail = ex.getConstraintViolations().stream()
+                .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                .collect(Collectors.joining("; "));
+        log.warn("Constraint violation: {}", detail);
+        return buildError(HttpStatus.BAD_REQUEST, "Validation failed", detail);
+    }
+
+    /** @PreAuthorize denial — caller is authenticated but their role is not permitted. */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
+        log.warn("Access denied: {}", ex.getMessage());
+        return buildError(HttpStatus.FORBIDDEN, "Access denied",
+                "Your role is not permitted to perform this action.");
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

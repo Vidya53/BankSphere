@@ -60,6 +60,36 @@
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
+        <!-- Config Client — fetches configuration from config-server at startup -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+
+        <!-- Actuator — exposes /actuator/refresh for runtime config reload -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- OpenFeign for inter-service communication -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
+        <!-- Resilience4j Circuit Breaker -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+        </dependency>
+
+        <!-- Spring Security — enables @PreAuthorize and header-based pre-authentication -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -84,6 +114,44 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                         </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- JaCoCo — line + branch coverage. Reports land in target/site/jacoco/index.html
+                 after `mvn verify`. The agent is wired before tests run so every test
+                 (unit, slice, integration) contributes to the same report. -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- DTOs / config / lombok @Builder boilerplate skew coverage numbers
+                         downwards even when business logic is fully tested. Excluding
+                         these lets the metric reflect the code that actually matters. -->
+                    <excludes>
+                        <exclude>com/cts/customerservices/dto/**</exclude>
+                        <exclude>com/cts/customerservices/entity/**</exclude>
+                        <exclude>com/cts/customerservices/enums/**</exclude>
+                        <exclude>com/cts/customerservices/CustomerServicesApplication.class</exclude>
+                        <exclude>com/cts/customerservices/config/**</exclude>
+                        <exclude>com/cts/customerservices/mapper/**</exclude>
+                        <exclude>com/cts/customerservices/payload/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>

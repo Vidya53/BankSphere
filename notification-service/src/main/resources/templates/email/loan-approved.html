@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Loan Approved — BankSphere</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f9;padding:20px 0;">
+  <tr><td align="center">
+  <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+
+    <tr>
+      <td style="background:linear-gradient(135deg,#1a3c6b 0%,#2563a8 100%);padding:28px 40px;">
+        <span style="color:#fff;font-size:24px;font-weight:bold;">🏦 BankSphere</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="background:#28a745;padding:18px 40px;text-align:center;">
+        <span style="color:#fff;font-size:18px;font-weight:bold;">🎉 Loan Approved!</span>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:40px;">
+        <p style="color:#333;font-size:16px;margin:0 0 20px;">
+          Dear <strong th:text="${customerName ?: 'Valued Customer'}">Customer</strong>,
+        </p>
+        <p style="color:#444;font-size:15px;line-height:1.7;margin:0 0 24px;">
+          We are pleased to inform you that your loan application has been approved. Here are your loan details:
+        </p>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4ff;border-radius:8px;margin-bottom:24px;">
+          <tr><td style="padding:24px;">
+            <table width="100%" cellpadding="8" cellspacing="0">
+              <tr>
+                <td style="color:#666;font-size:13px;font-weight:bold;text-transform:uppercase;">Loan ID</td>
+                <td style="color:#1a3c6b;font-size:14px;font-family:monospace;font-weight:bold;" th:text="${loanId ?: '—'}">LN000001</td>
+              </tr>
+              <tr>
+                <td style="color:#666;font-size:13px;font-weight:bold;text-transform:uppercase;">Loan Amount</td>
+                <td style="color:#1a3c6b;font-size:20px;font-weight:bold;" th:text="${'₹' + (loanAmount ?: '0')}">₹5,00,000</td>
+              </tr>
+              <tr>
+                <td style="color:#666;font-size:13px;font-weight:bold;text-transform:uppercase;">Loan Type</td>
+                <td style="color:#333;font-size:14px;" th:text="${loanType ?: '—'}">Home Loan</td>
+              </tr>
+              <tr>
+                <td style="color:#666;font-size:13px;font-weight:bold;text-transform:uppercase;">Interest Rate</td>
+                <td style="color:#333;font-size:14px;" th:text="${interestRate != null ? interestRate + '% p.a.' : '—'}">8.5% p.a.</td>
+              </tr>
+              <tr>
+                <td style="color:#666;font-size:13px;font-weight:bold;text-transform:uppercase;">Tenure</td>
+                <td style="color:#333;font-size:14px;" th:text="${tenureMonths != null ? tenureMonths + ' months' : '—'}">60 months</td>
+              </tr>
+              <tr>
+                <td style="color:#666;font-size:13px;font-weight:bold;text-transform:uppercase;">Monthly EMI</td>
+                <td style="color:#28a745;font-size:16px;font-weight:bold;" th:text="${'₹' + (emiAmount ?: '—')}">₹10,237</td>
+              </tr>
+              <tr>
+                <td style="color:#666;font-size:13px;font-weight:bold;text-transform:uppercase;">First EMI Date</td>
+                <td style="color:#333;font-size:14px;" th:text="${firstEmiDate ?: '—'}">01 Feb 2024</td>
+              </tr>
+            </table>
+          </td></tr>
+        </table>
+
+        <p style="color:#444;font-size:14px;line-height:1.7;">
+          Loan disbursement will happen within <strong>24-48 hours</strong> to your linked account.
+          Your loan agreement documents will be sent separately.
+        </p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="background:#f8f9fb;padding:24px 40px;border-top:1px solid #e8ecf0;">
+        <p style="color:#888;font-size:12px;margin:0;text-align:center;">
+          © 2024 BankSphere Financial Services Ltd. | Regulated by RBI
+        </p>
+      </td>
+    </tr>
+
+  </table>
+  </td></tr>
+</table>
+</body>
+</html>

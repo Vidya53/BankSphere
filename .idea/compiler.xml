@@ -7,13 +7,17 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="config-server" />
         <module name="Transaction-service" />
         <module name="customer-services" />
+        <module name="audit-compliance-service" />
         <module name="api-gateway" />
         <module name="Account-service" />
         <module name="identity-services" />
         <module name="loan-services" />
+        <module name="branch-service" />
         <module name="eureka-server" />
+        <module name="notification-service" />
       </profile>
     </annotationProcessing>
   </component>
@@ -22,10 +26,14 @@
       <module name="Account-service" options="-parameters" />
       <module name="Transaction-service" options="-parameters" />
       <module name="api-gateway" options="-parameters" />
+      <module name="audit-compliance-service" options="-parameters" />
+      <module name="branch-service" options="-parameters" />
+      <module name="config-server" options="-parameters" />
       <module name="customer-services" options="-parameters" />
       <module name="eureka-server" options="-parameters" />
       <module name="identity-services" options="-parameters" />
       <module name="loan-services" options="-parameters" />
+      <module name="notification-service" options="-parameters" />
     </option>
   </component>
 </project>

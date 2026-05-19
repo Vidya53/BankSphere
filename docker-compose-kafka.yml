@@ -1,0 +1,105 @@
+version: "3.8"
+
+# ── Kafka infrastructure for BankSphere audit event bus ──────────────────────
+# Usage: docker-compose -f docker-compose-kafka.yml up -d
+# Stop:  docker-compose -f docker-compose-kafka.yml down
+
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: banksphere-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-log:/var/lib/zookeeper/log
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: banksphere-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"       # internal (container-to-container)
+      - "29092:29092"     # external (host machine → Spring Boot apps)
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 168        # 7 days — meets regulatory minimum
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824   # 1 GB
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+
+  # ── Kafka UI — browse topics and consumer groups in a browser ────────────────
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: banksphere-kafka-ui
+    depends_on:
+      - kafka
+    ports:
+      - "9000:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: banksphere
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+
+  # ── Topic initializer — creates all BankSphere Kafka topics ──────────────────
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: banksphere-kafka-init
+    depends_on:
+      - kafka
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      echo 'Waiting for Kafka to be ready...'
+      cub kafka-ready -b kafka:9092 1 30
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 \
+        --topic banking.audit.events \
+        --partitions 3 \
+        --replication-factor 1 \
+        --config retention.ms=604800000 \
+        --config cleanup.policy=delete
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 \
+        --topic banking.audit.events-dlt \
+        --partitions 1 \
+        --replication-factor 1 \
+        --config retention.ms=2592000000
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 \
+        --topic banking.notification.events \
+        --partitions 3 \
+        --replication-factor 1 \
+        --config retention.ms=86400000 \
+        --config cleanup.policy=delete
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 \
+        --topic banking.notification.events-dlt \
+        --partitions 1 \
+        --replication-factor 1 \
+        --config retention.ms=604800000
+      echo 'Topics created successfully'
+      "
+    restart: on-failure
+
+volumes:
+  zookeeper-data:
+  zookeeper-log:
+  kafka-data:
+
+# ── Quick reference ────────────────────────────────────────────────────────────
+# Spring Boot services on the host should connect to:
+#   KAFKA_BOOTSTRAP_SERVERS=localhost:29092
+#
+# Spring Boot services running in Docker on the same network should connect to:
+#   KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+#
+# Kafka UI: http://localhost:9000
+# banking.audit.events — 3 partitions, 7-day retention
+# banking.audit.events-dlt — 1 partition, 30-day retention (compliance review)

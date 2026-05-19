@@ -5,6 +5,8 @@ import com.cts.customerservices.enums.KycStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -49,4 +51,10 @@ public class Kyc {
     @Future(message = "Document expiry date must be a future date")
     private LocalDateTime expiryDate;
 
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

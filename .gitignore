@@ -7,6 +7,16 @@
 # Maven
 target/
 
+# Node / Vite (frontend)
+node_modules/
+dist/
+
+# Runtime logs (service stdout/stderr + rotated files)
+_logs/
+logs/
+*.log
+*.log.*.gz
+
 # OS
 .DS_Store
 Thumbs.db

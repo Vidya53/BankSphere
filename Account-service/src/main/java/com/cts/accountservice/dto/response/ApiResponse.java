@@ -1,7 +1,9 @@
 package com.cts.accountservice.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 
@@ -14,13 +16,19 @@ import java.time.LocalDateTime;
 public class ApiResponse<T> {
 
     private boolean success;
+    private int statusCode;
     private String message;
     private T data;
-    private LocalDateTime timestamp;
+    private String error;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @Builder.Default
+    private LocalDateTime timestamp = LocalDateTime.now();
 
     public static <T> ApiResponse<T> success(String message, T data) {
         return ApiResponse.<T>builder()
                 .success(true)
+                .statusCode(HttpStatus.OK.value())
                 .message(message)
                 .data(data)
                 .timestamp(LocalDateTime.now())
@@ -30,26 +38,29 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> success(String message) {
         return ApiResponse.<T>builder()
                 .success(true)
+                .statusCode(HttpStatus.OK.value())
                 .message(message)
                 .timestamp(LocalDateTime.now())
                 .build();
     }
 
-    public static <T> ApiResponse<T> error(String message) {
+    public static <T> ApiResponse<T> created(String message, T data) {
         return ApiResponse.<T>builder()
-                .success(false)
-                .message(message)
-                .timestamp(LocalDateTime.now())
-                .build();
-    }
-
-    public static <T> ApiResponse<T> error(String message, T data) {
-        return ApiResponse.<T>builder()
-                .success(false)
+                .success(true)
+                .statusCode(HttpStatus.CREATED.value())
                 .message(message)
                 .data(data)
                 .timestamp(LocalDateTime.now())
                 .build();
     }
-}
 
+    public static <T> ApiResponse<T> error(HttpStatus status, String message, String detail) {
+        return ApiResponse.<T>builder()
+                .success(false)
+                .statusCode(status.value())
+                .message(message)
+                .error(detail)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+}

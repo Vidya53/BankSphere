@@ -26,6 +26,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
@@ -35,8 +36,9 @@ import java.time.LocalDateTime;
 @RequestMapping("/api/v1/transactions")
 @RequiredArgsConstructor
 @Validated
+@PreAuthorize("hasAnyRole('CUSTOMER','CSR','BRANCH_MANAGER','LOAN_OFFICER','ADMIN')")
 @Tag(
-    name = "Transaction API",
+    name = "Transactions",
     description = "Endpoints for initiating, querying, and managing financial transactions in BankSphere"
 )
 public class TransactionController {
@@ -44,7 +46,11 @@ public class TransactionController {
     private static final String INITIATED_BY_HEADER = "X-Initiated-By";
     @Operation(
         summary = "Initiate a new transaction",
-        description = "Creates a new financial transaction. Idempotency key is mandatory — duplicate keys return 409."
+        description = """
+                Creates a new financial transaction (DEPOSIT, WITHDRAWAL, TRANSFER, etc.). A client-supplied idempotency key is mandatory — duplicate keys return 409. Newly created transactions start in PENDING state and are subject to per-account daily caps of ₹10,00,000 / 50 txns and a per-transaction ceiling of ₹5,00,000.
+
+                **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN
+                **Side effects:** Persists a PENDING transaction; downstream payment engine drives it to SUCCESS/FAILED."""
     )
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Transaction initiated successfully"),
@@ -63,7 +69,13 @@ public class TransactionController {
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.created(response, "Transaction initiated successfully"));
     }
-    @Operation(summary = "Get transaction by ID", description = "Fetches a single transaction by its internal UUID.")
+    @Operation(
+            summary = "Get transaction by ID",
+            description = """
+                    Fetches a single transaction by its internal UUID. Returns full transaction details including status, amounts, and timestamps.
+
+                    **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Transaction found"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Transaction not found", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
@@ -75,7 +87,13 @@ public class TransactionController {
         TransactionResponseDto response = transactionService.getTransactionById(transactionId);
         return ResponseEntity.ok(ApiResponse.success(response, "Transaction fetched successfully"));
     }
-    @Operation(summary = "Get transaction by reference number", description = "Fetches a transaction by its human-readable reference number (e.g., TXN-20260429-123456789).")
+    @Operation(
+            summary = "Get transaction by reference number",
+            description = """
+                    Fetches a transaction by its human-readable reference number (e.g., `TXN-20260429-123456789`). Useful for customer-facing lookups when the internal UUID is unknown.
+
+                    **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Transaction found"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Transaction not found", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
@@ -87,7 +105,13 @@ public class TransactionController {
         TransactionResponseDto response = transactionService.getTransactionByReferenceNumber(referenceNumber);
         return ResponseEntity.ok(ApiResponse.success(response, "Transaction fetched successfully"));
     }
-    @Operation(summary = "Get transaction by idempotency key", description = "Allows clients to check the outcome of a previously submitted request using the idempotency key.")
+    @Operation(
+            summary = "Get transaction by idempotency key",
+            description = """
+                    Allows clients to safely retry by checking the outcome of a previously submitted request using its idempotency key. Returns the existing transaction instead of creating a new one.
+
+                    **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Transaction found"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Transaction not found", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
@@ -99,7 +123,13 @@ public class TransactionController {
         TransactionResponseDto response = transactionService.getTransactionByIdempotencyKey(idempotencyKey);
         return ResponseEntity.ok(ApiResponse.success(response, "Transaction fetched successfully"));
     }
-    @Operation(summary = "Get account transaction history", description = "Returns paginated transaction history for an account (both as sender and receiver), newest first.")
+    @Operation(
+            summary = "Get account transaction history",
+            description = """
+                    Returns paginated transaction history for an account, covering activity both as sender and receiver. Results are sorted newest-first by default and capped at 100 rows per page.
+
+                    **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
     @GetMapping("/account/{accountId}")
     public ResponseEntity<ApiResponse<Page<TransactionResponseDto>>> getTransactionsByAccount(
             @Parameter(description = "Account ID") @PathVariable @NotBlank(message = "Account ID must not be blank") String accountId,
@@ -114,7 +144,13 @@ public class TransactionController {
         return ResponseEntity.ok(ApiResponse.success(response,
                 "Transaction history fetched successfully"));
     }
-    @Operation(summary = "Get account history by date range", description = "Returns paginated transaction history for an account within the specified date range. Useful for bank statement generation.")
+    @Operation(
+            summary = "Get account history by date range",
+            description = """
+                    Returns paginated transaction history for an account within the specified ISO-8601 datetime range. Primary use case is bank-statement generation and dispute investigation.
+
+                    **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
     @GetMapping("/account/{accountId}/range")
     public ResponseEntity<ApiResponse<Page<TransactionResponseDto>>> getTransactionsByAccountAndDateRange(
             @Parameter(description = "Account ID") @PathVariable @NotBlank(message = "Account ID must not be blank") String accountId,
@@ -131,7 +167,13 @@ public class TransactionController {
         return ResponseEntity.ok(ApiResponse.success(response,
                 "Transaction history fetched successfully"));
     }
-    @Operation(summary = "Filter transactions by status", description = "Returns paginated transactions filtered by their lifecycle status (PENDING, SUCCESS, FAILED, etc.). Used by ops dashboards.")
+    @Operation(
+            summary = "Filter transactions by status",
+            description = """
+                    Returns paginated transactions filtered by lifecycle status (PENDING, SUCCESS, FAILED, CANCELLED, REVERSED). Used by ops dashboards and reconciliation jobs.
+
+                    **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
     @GetMapping("/status/{status}")
     public ResponseEntity<ApiResponse<Page<TransactionResponseDto>>> getTransactionsByStatus(
             @Parameter(description = "Transaction lifecycle status") @PathVariable TransactionStatus status,
@@ -146,7 +188,13 @@ public class TransactionController {
         return ResponseEntity.ok(ApiResponse.success(response,
                 "Transactions fetched by status successfully"));
     }
-    @Operation(summary = "Filter transactions by account and type", description = "Returns paginated transactions for a sender account filtered by transaction type (e.g., all WITHDRAWALs).")
+    @Operation(
+            summary = "Filter transactions by account and type",
+            description = """
+                    Returns paginated transactions for a sender account filtered by transaction type (e.g., all WITHDRAWALs or all TRANSFERs). Useful for type-specific statements and analytics drill-downs.
+
+                    **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
     @GetMapping("/account/{accountId}/type")
     public ResponseEntity<ApiResponse<Page<TransactionResponseDto>>> getTransactionsByAccountAndType(
             @Parameter(description = "Sender account ID") @PathVariable @NotBlank(message = "Account ID must not be blank") String accountId,
@@ -162,7 +210,14 @@ public class TransactionController {
         return ResponseEntity.ok(ApiResponse.success(response,
                 "Transactions fetched by type successfully"));
     }
-    @Operation(summary = "Cancel a transaction", description = "Cancels a PENDING transaction. Only transactions in PENDING state can be cancelled.")
+    @Operation(
+            summary = "Cancel a transaction",
+            description = """
+                    Cancels a PENDING transaction. Only transactions still in PENDING state are cancellable — SUCCESS / FAILED / REVERSED transactions cannot be cancelled and return 409.
+
+                    **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN
+                    **Side effects:** Transitions PENDING → CANCELLED with the supplied remarks."""
+    )
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Transaction cancelled"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Transaction not in cancellable state", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
@@ -180,7 +235,14 @@ public class TransactionController {
 
         return ResponseEntity.ok(ApiResponse.success(response, "Transaction cancelled successfully"));
     }
-    @Operation(summary = "Reverse a transaction", description = "Reverses a SUCCESS transaction. Creates a linked REVERSAL transaction and marks the original as REVERSED.")
+    @Operation(
+            summary = "Reverse a transaction",
+            description = """
+                    Reverses a transaction that has already completed. Only transactions in SUCCESS state are reversible — a linked REVERSAL transaction is created and the original is moved to REVERSED.
+
+                    **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN
+                    **Side effects:** Creates a new REVERSAL transaction; transitions original SUCCESS → REVERSED."""
+    )
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Reversal transaction created"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Transaction not reversible or already reversed", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
@@ -196,7 +258,14 @@ public class TransactionController {
                 transactionService.reverseTransaction(transactionId, requestDto.getRemarks(), initiatedBy);
         return ResponseEntity.ok(ApiResponse.success(response, "Transaction reversed successfully"));
     }
-    @Operation(summary = "Mark transaction as SUCCESS ⚙️ Internal", description = "Called by the payment processing engine after network confirmation. **Internal use only.**")
+    @Operation(
+            summary = "Mark transaction as SUCCESS (internal)",
+            description = """
+                    Called by the payment-processing engine after network confirmation to transition a PENDING transaction to SUCCESS, recording post-settlement sender and receiver balances.
+
+                    **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN
+                    **Side effects:** Transitions PENDING → SUCCESS and stores running balances."""
+    )
     @PatchMapping("/{transactionId}/success")
     public ResponseEntity<ApiResponse<TransactionResponseDto>> markAsSuccess(
             @Parameter(description = "UUID of the transaction") @PathVariable @NotBlank(message = "Transaction ID must not be blank") String transactionId,
@@ -213,7 +282,14 @@ public class TransactionController {
                 transactionService.markAsSuccess(transactionId, senderBalance, receiverBalance);
         return ResponseEntity.ok(ApiResponse.success(response, "Transaction marked as successful"));
     }
-    @Operation(summary = "Mark transaction as FAILED ⚙️ Internal", description = "Called by the payment processing engine on failure. **Internal use only.**")
+    @Operation(
+            summary = "Mark transaction as FAILED (internal)",
+            description = """
+                    Called by the payment-processing engine on failure to transition a PENDING transaction to FAILED with a descriptive failure reason.
+
+                    **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN
+                    **Side effects:** Transitions PENDING → FAILED and persists the failure reason."""
+    )
     @PatchMapping("/{transactionId}/fail")
     public ResponseEntity<ApiResponse<TransactionResponseDto>> markAsFailed(
             @Parameter(description = "UUID of the transaction") @PathVariable @NotBlank(message = "Transaction ID must not be blank") String transactionId,
@@ -223,7 +299,13 @@ public class TransactionController {
                 transactionService.markAsFailed(transactionId, failureReason);
         return ResponseEntity.ok(ApiResponse.success(response, "Transaction marked as failed"));
     }
-    @Operation(summary = "Get total transacted amount", description = "Returns the cumulative SUCCESS transaction amount for an account within a time window. Used for daily limit enforcement.")
+    @Operation(
+            summary = "Get total transacted amount",
+            description = """
+                    Returns the cumulative SUCCESS transaction amount for an account within a time window. Used to enforce the ₹10,00,000 / day per-account cap.
+
+                    **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
     @GetMapping("/analytics/total-amount")
     public ResponseEntity<ApiResponse<BigDecimal>> getTotalTransactedAmount(
             @RequestParam @NotBlank(message = "Account ID is required") String accountId,
@@ -234,7 +316,13 @@ public class TransactionController {
         return ResponseEntity.ok(ApiResponse.success(total,
                 "Total transacted amount fetched successfully"));
     }
-    @Operation(summary = "Get transaction velocity count", description = "Returns the count of transactions initiated by an account since a given datetime. Used for rate-limiting and velocity checks.")
+    @Operation(
+            summary = "Get transaction velocity count",
+            description = """
+                    Returns the count of transactions initiated by an account since a given datetime. Used to enforce the 50-transactions-per-day velocity cap and other fraud checks.
+
+                    **Allowed roles:** CUSTOMER, CSR, BRANCH_MANAGER, LOAN_OFFICER, ADMIN"""
+    )
     @GetMapping("/analytics/count")
     public ResponseEntity<ApiResponse<Long>> getTransactionCount(
             @RequestParam @NotBlank(message = "Account ID is required") String accountId,

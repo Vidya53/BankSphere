@@ -115,5 +115,17 @@ public class Account {
     @Column(precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal dailyWithdrawalLimit = new BigDecimal("200000.00");
+
+    // ── Transaction PIN (BCrypt-hashed). Null until the customer sets one. ──
+    @Column(length = 100)
+    private String transactionPin;
+
+    private LocalDateTime pinSetAt;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer pinFailedAttempts = 0;
+
+    private LocalDateTime pinLockedUntil;
 }
 

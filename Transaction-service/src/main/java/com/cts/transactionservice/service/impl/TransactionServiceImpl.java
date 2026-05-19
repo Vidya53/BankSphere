@@ -56,25 +56,36 @@ public class TransactionServiceImpl implements TransactionService {
                                                       String initiatedBy) {
         log.info("Initiating transaction | type={} | idempotencyKey={}",
                 requestDto.getTransactionType(), requestDto.getIdempotencyKey());
-        if (transactionRepository.existsByIdempotencyKey(requestDto.getIdempotencyKey())) {
-            log.warn("Duplicate transaction request detected | idempotencyKey={}",
-                    requestDto.getIdempotencyKey());
-            Transaction existing = transactionRepository
-                    .findByIdempotencyKey(requestDto.getIdempotencyKey())
-                    .orElseThrow(() -> new TransactionNotFoundException(
-                            "Idempotency key found but transaction record missing — data inconsistency"));
-            // Return the original transaction — do NOT re-process
-            throw new DuplicateTransactionException(
-                    "Transaction already processed. Reference: " + existing.getReferenceNumber());
-        }
+        transactionRepository.findByIdempotencyKey(requestDto.getIdempotencyKey())
+                .ifPresent(existing -> {
+                    log.warn("Duplicate transaction request detected | idempotencyKey={} | existingRef={}",
+                            requestDto.getIdempotencyKey(), existing.getReferenceNumber());
+                    throw new DuplicateTransactionException(
+                            "Transaction already processed. Reference: " + existing.getReferenceNumber());
+                });
         validateTransactionRequest(requestDto, initiatedBy);
         Transaction transaction = transactionMapper.toEntity(requestDto);
         transaction.setReferenceNumber(generateReferenceNumber());
         transaction.setInitiatedBy(initiatedBy);
-        transaction.setStatus(TransactionStatus.PENDING);
+
+        // Service-to-service callers (e.g. account-service after a successful
+        // funds movement) may pre-mark the transaction as SUCCESS / FAILED.
+        // Customer-facing flow continues to use PENDING by default.
+        TransactionStatus seed = requestDto.getInitialStatus() != null
+                ? requestDto.getInitialStatus()
+                : TransactionStatus.PENDING;
+        transaction.setStatus(seed);
+        if (seed == TransactionStatus.SUCCESS || seed == TransactionStatus.FAILED) {
+            transaction.setCompletedAt(LocalDateTime.now());
+            if (seed == TransactionStatus.SUCCESS) {
+                if (requestDto.getSenderBalanceAfter()   != null) transaction.setSenderBalanceAfter(requestDto.getSenderBalanceAfter());
+                if (requestDto.getReceiverBalanceAfter() != null) transaction.setReceiverBalanceAfter(requestDto.getReceiverBalanceAfter());
+            }
+        }
+
         Transaction saved = transactionRepository.save(transaction);
-        log.info("Transaction persisted | transactionId={} | referenceNumber={}",
-                saved.getTransactionId(), saved.getReferenceNumber());
+        log.info("Transaction persisted | transactionId={} | referenceNumber={} | status={}",
+                saved.getTransactionId(), saved.getReferenceNumber(), saved.getStatus());
         return transactionMapper.toResponseDto(saved);
     }
     @Override
@@ -109,7 +120,7 @@ public class TransactionServiceImpl implements TransactionService {
         log.debug("Fetching transaction history | accountId={}", accountId);
         return transactionRepository
                 .findAllByAccountId(accountId, pageable)
-                .map(transactionMapper::toResponseDto);
+                .map(tx -> transactionMapper.toResponseDto(tx, accountId));
     }
 
     @Override
@@ -122,7 +133,7 @@ public class TransactionServiceImpl implements TransactionService {
         log.debug("Fetching transaction history | accountId={} | from={} | to={}", accountId, from, to);
         return transactionRepository
                 .findAllByAccountIdAndDateRange(accountId, from, to, pageable)
-                .map(transactionMapper::toResponseDto);
+                .map(tx -> transactionMapper.toResponseDto(tx, accountId));
     }
 
     @Override
@@ -143,7 +154,7 @@ public class TransactionServiceImpl implements TransactionService {
         log.debug("Fetching transactions | accountId={} | type={}", accountId, transactionType);
         return transactionRepository
                 .findBySenderAccountIdAndTransactionType(accountId, transactionType, pageable)
-                .map(transactionMapper::toResponseDto);
+                .map(tx -> transactionMapper.toResponseDto(tx, accountId));
     }
     @Override
     @Transactional

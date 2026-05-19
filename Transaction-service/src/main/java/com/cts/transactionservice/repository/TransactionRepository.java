@@ -87,6 +87,42 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
     List<Object[]> countGroupByStatus();
     @Query("SELECT t.transactionType, COUNT(t), SUM(t.amount) FROM Transaction t GROUP BY t.transactionType")
     List<Object[]> volumeGroupByTransactionType();
+
+    @Query("""
+            SELECT t.channel, COUNT(t), COALESCE(SUM(t.amount), 0)
+            FROM Transaction t
+            WHERE t.status = 'SUCCESS'
+              AND t.createdAt >= :since
+            GROUP BY t.channel
+            """)
+    List<Object[]> volumeGroupByChannelSince(@Param("since") LocalDateTime since);
+
+    @Query("""
+            SELECT FUNCTION('DATE', t.createdAt), COUNT(t), COALESCE(SUM(t.amount), 0)
+            FROM Transaction t
+            WHERE t.status = 'SUCCESS'
+              AND t.createdAt BETWEEN :from AND :to
+            GROUP BY FUNCTION('DATE', t.createdAt)
+            ORDER BY FUNCTION('DATE', t.createdAt)
+            """)
+    List<Object[]> dailySuccessVolume(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("""
+            SELECT FUNCTION('YEAR', t.createdAt), FUNCTION('MONTH', t.createdAt),
+                   t.transactionType, COUNT(t), COALESCE(SUM(t.amount), 0)
+            FROM Transaction t
+            WHERE t.status = 'SUCCESS'
+              AND t.createdAt >= :since
+            GROUP BY FUNCTION('YEAR', t.createdAt), FUNCTION('MONTH', t.createdAt), t.transactionType
+            ORDER BY 1, 2
+            """)
+    List<Object[]> monthlySuccessVolumeByType(@Param("since") LocalDateTime since);
+
+    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.status = 'SUCCESS'")
+    BigDecimal totalSuccessfulVolume();
+
+    long count();
+
     @Modifying
     @Query("""
             UPDATE Transaction t

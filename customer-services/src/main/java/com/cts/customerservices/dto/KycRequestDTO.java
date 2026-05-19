@@ -19,9 +19,10 @@ public class KycRequestDTO {
 
     @NotBlank(message = "Document number is required")
     @Size(min = 5, max = 50, message = "Document number must be between 5 and 50 characters")
+    @Pattern(regexp = "^[A-Z0-9]{5,50}$", message = "Document number must be 5-50 uppercase letters or digits")
     private String documentNumber;
 
-    @Future(message = "Document expiry date must be a future date")
+    @Future(message = "Document expiry date must be in the future")
     private LocalDateTime expiryDate;
 
 }

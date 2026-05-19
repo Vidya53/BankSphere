@@ -4,14 +4,16 @@ import com.cts.accountservice.dto.request.CloseAccountRequest;
 import com.cts.accountservice.dto.request.FreezeAccountRequest;
 import com.cts.accountservice.dto.response.AccountResponse;
 import com.cts.accountservice.dto.response.BranchAccountSummary;
+import com.cts.accountservice.dto.response.BranchAccountTypeBreakdown;
 import com.cts.accountservice.entity.Account;
 import com.cts.accountservice.enums.AccountStatus;
+import com.cts.accountservice.enums.AccountType;
 import com.cts.accountservice.enums.ApplicationStatus;
 import com.cts.accountservice.exception.*;
 import com.cts.accountservice.mapper.AccountMapper;
 import com.cts.accountservice.repository.AccountApplicationRepository;
 import com.cts.accountservice.repository.AccountRepository;
-import com.cts.accountservice.security.UserContext;
+import com.cts.accountservice.context.UserContext;
 import com.cts.accountservice.service.AccountService;
 import com.cts.accountservice.service.AuditService;
 import com.cts.accountservice.service.NotificationService;
@@ -166,12 +168,38 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
+    public int closeAllAccountsForCustomer(String customerId, String reason, String closedBy) {
+        log.info("Cascade-closing all accounts for customer {} (reason: {}, by: {})",
+                customerId, reason, closedBy);
+        int closed = accountRepository.closeAllAccountsForCustomer(
+                customerId,
+                reason != null ? reason : "Customer soft-deleted",
+                closedBy != null ? closedBy : "SYSTEM");
+        log.info("Closed {} account(s) for customer {}", closed, customerId);
+        return closed;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BranchAccountTypeBreakdown> getBranchAccountTypeBreakdown(String branchCode) {
+        return accountRepository.accountTypeBreakdownByBranch(branchCode).stream()
+                .map(row -> BranchAccountTypeBreakdown.builder()
+                        .accountType((AccountType) row[0])
+                        .uniqueCustomers(((Number) row[1]).longValue())
+                        .totalAccounts(((Number) row[2]).longValue())
+                        .totalBalance((BigDecimal) row[3])
+                        .build())
+                .toList();
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public BranchAccountSummary getBranchSummary(String branchCode) {
         BigDecimal totalBalance = accountRepository.getTotalBalanceByBranch(branchCode);
         return BranchAccountSummary.builder()
                 .branchCode(branchCode)
-                .totalAccounts(accountRepository.findByBranchCode(branchCode).size())
+                .totalAccounts(accountRepository.countByBranchCode(branchCode))
                 .activeAccounts(accountRepository.countByBranchCodeAndStatus(branchCode, AccountStatus.ACTIVE))
                 .frozenAccounts(accountRepository.countByBranchCodeAndStatus(branchCode, AccountStatus.FROZEN))
                 .closedAccounts(accountRepository.countByBranchCodeAndStatus(branchCode, AccountStatus.CLOSED))

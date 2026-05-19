@@ -1,0 +1,40 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# CUSTOMER SERVICE CONFIGURATION
+# Port 8081 | Customer CRUD + KYC | calls branch-service via Feign
+# ═══════════════════════════════════════════════════════════════════════════════
+
+server:
+  port: ${CUSTOMER_SERVICE_PORT:8081}
+
+spring:
+  datasource:
+    # Credentials + driver come from config-repo/application.yaml (shared).
+    url: ${CUSTOMER_DB_URL:jdbc:mysql://localhost:3306/customer_service_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+
+# Named Resilience4j instances for branch-service Feign calls
+resilience4j:
+  circuitbreaker:
+    instances:
+      branch-service:
+        baseConfig: default
+  timelimiter:
+    instances:
+      branch-service:
+        baseConfig: default
+  retry:
+    instances:
+      branch-service:
+        baseConfig: default
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    display-request-duration: true
+
+logging:
+  level:
+    com.cts.customerservices: INFO

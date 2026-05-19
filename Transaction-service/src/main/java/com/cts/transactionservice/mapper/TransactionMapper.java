@@ -35,7 +35,23 @@ public class TransactionMapper {
                 .build();
     }
     public TransactionResponseDto toResponseDto(Transaction entity) {
+        return toResponseDto(entity, null);
+    }
+
+    /**
+     * Viewer-scoped variant: compares the raw (unmasked) sender / receiver
+     * account ids against {@code viewerAccountId} BEFORE masking is applied,
+     * so we can stamp a definitive CREDIT / DEBIT / SELF direction on the
+     * response. The frontend then renders the sign and label directly from
+     * this field instead of doing fragile string matches against masked ids.
+     *
+     * When {@code viewerAccountId} is null/blank, direction stays null —
+     * useful for staff-side lookups by transactionId / referenceNumber where
+     * there is no single "viewer".
+     */
+    public TransactionResponseDto toResponseDto(Transaction entity, String viewerAccountId) {
         Objects.requireNonNull(entity, "Transaction entity must not be null");
+        String direction = computeDirection(entity, viewerAccountId);
         return TransactionResponseDto.builder()
                 .transactionId(entity.getTransactionId())
                 .referenceNumber(entity.getReferenceNumber())
@@ -61,6 +77,7 @@ public class TransactionMapper {
                 .initiatedBy(entity.getInitiatedBy())
                 .message(resolveStatusMessage(entity))
                 .failureReason(resolveFailureReason(entity))
+                .direction(direction)
                 .build();
     }
 
@@ -72,6 +89,47 @@ public class TransactionMapper {
                 .filter(Objects::nonNull)           // skip any null elements defensively
                 .map(this::toResponseDto)
                 .collect(Collectors.toList());
+    }
+
+    private String computeDirection(Transaction entity, String viewerAccountId) {
+        if (viewerAccountId == null || viewerAccountId.isBlank()) {
+            return null;
+        }
+        String viewer = viewerAccountId.trim().toUpperCase();
+        String sender   = normaliseId(entity.getSenderAccountId());
+        String receiver = normaliseId(entity.getReceiverAccountId());
+
+        boolean isSender   = sender   != null && sender.equals(viewer);
+        boolean isReceiver = receiver != null && receiver.equals(viewer);
+
+        if (isSender && isReceiver) return "SELF";
+
+        // Type-driven direction wins when one side is missing (DEPOSIT, WITHDRAWAL,
+        // INTEREST, FEE, PAYMENT). Falls back to side membership for TRANSFER /
+        // REVERSAL / REFUND which have both legs populated.
+        if (entity.getTransactionType() != null) {
+            switch (entity.getTransactionType()) {
+                case DEPOSIT:
+                case INTEREST:
+                    return isReceiver ? "CREDIT" : (isSender ? "DEBIT" : "CREDIT");
+                case WITHDRAWAL:
+                case FEE:
+                    return isSender ? "DEBIT" : (isReceiver ? "CREDIT" : "DEBIT");
+                case PAYMENT:
+                    return isSender ? "DEBIT" : "CREDIT";
+                default:
+                    // TRANSFER / REVERSAL / REFUND — direction from viewer's seat.
+                    break;
+            }
+        }
+
+        if (isReceiver) return "CREDIT";
+        if (isSender)   return "DEBIT";
+        return null;
+    }
+
+    private String normaliseId(String id) {
+        return (id == null || id.isBlank()) ? null : id.trim().toUpperCase();
     }
     public void updateEntityFromDto(TransactionRequestDto dto, Transaction entity) {
         Objects.requireNonNull(dto,    "TransactionRequestDto must not be null");

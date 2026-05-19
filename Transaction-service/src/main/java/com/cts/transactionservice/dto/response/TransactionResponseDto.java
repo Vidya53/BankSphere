@@ -43,5 +43,11 @@ public class TransactionResponseDto {
     private String initiatedBy;
     private String message;
     private String failureReason;
+
+    // Server-computed direction from the viewer's perspective.
+    // CREDIT = money in (viewer is the receiver), DEBIT = money out (viewer is the sender),
+    // SELF = both legs belong to the viewer. Null when the endpoint isn't viewer-scoped
+    // (e.g. lookup by transactionId / referenceNumber).
+    private String direction;
 }
 

@@ -1,7 +1,6 @@
 package com.cts.accountservice.service;
 
 import com.cts.accountservice.client.CustomerServiceClient;
-import com.cts.accountservice.client.dto.KycApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,18 +12,14 @@ public class KycVerificationService {
 
     private final CustomerServiceClient customerServiceClient;
 
-    public boolean isKycApproved(String customerId) {
+    public boolean isKycApproved(String userId) {
         try {
-            KycApiResponse response = customerServiceClient.getKycStatus(customerId);
-            if (response == null || response.getData() == null) {
-                log.warn("KYC response empty for customer {} — treating as NOT approved", customerId);
-                return false;
-            }
-            boolean approved = "APPROVED".equalsIgnoreCase(response.getData().getStatus());
-            log.info("KYC check for customer {}: {}", customerId, response.getData().getStatus());
-            return approved;
+            Boolean approved = customerServiceClient.isKycApprovedByUserId(userId);
+            boolean result = Boolean.TRUE.equals(approved);
+            log.info("KYC check for userId {}: {}", userId, result ? "APPROVED" : "NOT APPROVED");
+            return result;
         } catch (Exception e) {
-            log.error("KYC check failed for customer {}: {}", customerId, e.getMessage());
+            log.error("KYC check failed for userId {}: {}", userId, e.getMessage());
             return false;
         }
     }

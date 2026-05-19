@@ -1,71 +1,69 @@
 package com.cts.loanservice.util;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.Hidden;
+import lombok.*;
+import org.springframework.http.HttpStatus;
 
-@Hidden   // ✅ IMPORTANT: Prevents Swagger from introspecting this class
+import java.time.LocalDateTime;
+
+@Hidden
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
 
     private boolean success;
+    private int statusCode;
     private String message;
     private T data;
     private Object errors;
 
-    // Constructors
-    public ApiResponse() {}
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @Builder.Default
+    private LocalDateTime timestamp = LocalDateTime.now();
 
-    public ApiResponse(boolean success, String message, T data, Object errors) {
-        this.success = success;
-        this.message = message;
-        this.data = data;
-        this.errors = errors;
-    }
-
-    // ✅ Static success response
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(true, "Success", data, null);
+        return ApiResponse.<T>builder()
+                .success(true)
+                .statusCode(HttpStatus.OK.value())
+                .message("Success")
+                .data(data)
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 
-    // ✅ Static failure responses
+    public static <T> ApiResponse<T> created(T data) {
+        return ApiResponse.<T>builder()
+                .success(true)
+                .statusCode(HttpStatus.CREATED.value())
+                .message("Created successfully")
+                .data(data)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
     public static <T> ApiResponse<T> failure(String message, Object errors) {
-        return new ApiResponse<>(false, message, null, errors);
+        return ApiResponse.<T>builder()
+                .success(false)
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .message(message)
+                .errors(errors)
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 
-    public static <T> ApiResponse<T> failure(String message) {
-        return new ApiResponse<>(false, message, null, null);
-    }
-
-    // Getters & Setters
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public void setData(T data) {
-        this.data = data;
-    }
-
-    public Object getErrors() {
-        return errors;
-    }
-
-    public void setErrors(Object errors) {
-        this.errors = errors;
+    public static <T> ApiResponse<T> failure(HttpStatus status, String message, Object errors) {
+        return ApiResponse.<T>builder()
+                .success(false)
+                .statusCode(status.value())
+                .message(message)
+                .errors(errors)
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 }

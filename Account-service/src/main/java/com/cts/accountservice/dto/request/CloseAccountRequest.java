@@ -11,8 +11,8 @@ import lombok.*;
 @Builder
 public class CloseAccountRequest {
 
-    @NotBlank(message = "Close reason is required")
-    @Size(min = 5, max = 500, message = "Reason must be between 5 and 500 characters")
+    @NotBlank(message = "A reason for closing the account is required")
+    @Size(min = 5, max = 500, message = "Close reason must be between 5 and 500 characters")
     private String reason;
 }
 

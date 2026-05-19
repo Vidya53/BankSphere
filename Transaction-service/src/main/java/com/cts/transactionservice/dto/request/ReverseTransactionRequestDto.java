@@ -9,8 +9,8 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ReverseTransactionRequestDto {
-    @NotBlank(message = "Reversal reason / remarks are required")
-    @Size(max = 500, message = "Remarks must not exceed 500 characters")
+    @NotBlank(message = "A reason for reversing the transaction is required")
+    @Size(min = 5, max = 500, message = "Reversal remarks must be between 5 and 500 characters")
     private String remarks;
 }
 

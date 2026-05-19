@@ -4,9 +4,13 @@
     <file url="file://$PROJECT_DIR$/Account-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Transaction-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/api-gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/audit-compliance-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/branch-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/config-server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/customer-services/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/eureka-server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/identity-services/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/loan-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/notification-service/src/main/java" charset="UTF-8" />
   </component>
 </project>

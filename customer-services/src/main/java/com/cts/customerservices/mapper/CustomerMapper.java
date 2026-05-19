@@ -62,6 +62,7 @@ public class CustomerMapper {
                 .postalCode(customer.getPostalCode())
                 .country(customer.getCountry())
                 .status(customer.getStatus())
+                .isDeleted(customer.getIsDeleted())
                 .riskCategory(customer.getRiskCategory())
                 .createdAt(customer.getCreatedAt())
                 .updatedAt(customer.getUpdatedAt())

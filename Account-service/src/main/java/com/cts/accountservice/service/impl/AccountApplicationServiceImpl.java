@@ -1,5 +1,6 @@
 package com.cts.accountservice.service.impl;
 
+import com.cts.accountservice.client.CustomerServiceClient;
 import com.cts.accountservice.dto.request.AccountApplicationRequest;
 import com.cts.accountservice.dto.request.RejectRequest;
 import com.cts.accountservice.dto.response.AccountApplicationResponse;
@@ -12,7 +13,7 @@ import com.cts.accountservice.exception.*;
 import com.cts.accountservice.mapper.AccountMapper;
 import com.cts.accountservice.repository.AccountApplicationRepository;
 import com.cts.accountservice.repository.AccountRepository;
-import com.cts.accountservice.security.UserContext;
+import com.cts.accountservice.context.UserContext;
 import com.cts.accountservice.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ public class AccountApplicationServiceImpl implements AccountApplicationService 
     private final BranchValidationService branchValidationService;
     private final NotificationService notificationService;
     private final AuditService auditService;
+    private final CustomerServiceClient customerServiceClient;
 
     @Override
     public AccountApplicationResponse applyForAccount(AccountApplicationRequest request, UserContext userContext) {
@@ -47,8 +49,9 @@ public class AccountApplicationServiceImpl implements AccountApplicationService 
         }
 
         // Validate branch
-        if (!branchValidationService.isBranchActive(userContext.getBranchCode())) {
-            throw new InvalidOperationException("Branch " + userContext.getBranchCode() + " is not active");
+        String branchCode = request.getBranchCode();
+        if (!branchValidationService.isBranchActive(branchCode)) {
+            throw new InvalidOperationException("Branch " + branchCode + " is not active");
         }
 
         // Check duplicate pending/submitted application for same account type
@@ -83,7 +86,7 @@ public class AccountApplicationServiceImpl implements AccountApplicationService 
                 .customerName(userContext.getCustomerName() != null ? userContext.getCustomerName() : userContext.getUsername())
                 .customerEmail(userContext.getEmail() != null ? userContext.getEmail() : "")
                 .customerPhone(userContext.getPhone())
-                .branchCode(userContext.getBranchCode())
+                .branchCode(branchCode)
                 .accountType(request.getAccountType())
                 .initialDeposit(request.getInitialDeposit() != null ? request.getInitialDeposit() : BigDecimal.ZERO)
                 .nomineeName(request.getNomineeName())
@@ -98,7 +101,7 @@ public class AccountApplicationServiceImpl implements AccountApplicationService 
 
         // Audit & Notification
         auditService.logAudit(userContext.getUserId(), userContext.getRole(), "ACCOUNT_APPLICATION_SUBMITTED",
-                "ACCOUNT_APPLICATION", appRef, userContext.getBranchCode());
+                "ACCOUNT_APPLICATION", appRef, branchCode);
         notificationService.sendNotification(userContext.getUserId(), userContext.getEmail(),
                 "Account Application Submitted",
                 "Your " + request.getAccountType() + " account application (" + appRef + ") has been submitted successfully.");
@@ -208,6 +211,21 @@ public class AccountApplicationServiceImpl implements AccountApplicationService 
         app.setGeneratedAccountNo(accountNo);
         applicationRepository.save(app);
 
+        // Auto-activate the customer. Account approval already required KYC to be
+        // APPROVED, so the customer has satisfied register + KYC + account.
+        // Best-effort: failure here must not roll back account creation — the
+        // customer can still be promoted manually from the staff console.
+        try {
+            Boolean activated = customerServiceClient.activateCustomerByUserId(app.getCustomerId());
+            if (Boolean.TRUE.equals(activated)) {
+                log.info("Customer {} auto-activated after application {} approval",
+                        app.getCustomerId(), app.getApplicationRef());
+            }
+        } catch (Exception ex) {
+            log.warn("Customer auto-activation failed for {} — manual activation may be required: {}",
+                    app.getCustomerId(), ex.getMessage());
+        }
+
         // Audit & Notification
         auditService.logAudit(staffContext.getUserId(), staffContext.getRole(), "ACCOUNT_APPLICATION_APPROVED",
                 "ACCOUNT_APPLICATION", app.getApplicationRef(), app.getBranchCode());
@@ -255,16 +273,21 @@ public class AccountApplicationServiceImpl implements AccountApplicationService 
 
     private String generateAccountNo(AccountType type) {
         String prefix = switch (type) {
-            case SAVINGS -> "SAV";
-            case CURRENT -> "CUR";
-            case FIXED_DEPOSIT -> "FDR";
+            case SAVINGS           -> "SAV";
+            case CURRENT           -> "CUR";
+            case FIXED_DEPOSIT     -> "FDR";
             case RECURRING_DEPOSIT -> "RDP";
         };
-        String unique;
         String accountNo;
+        int attempts = 0;
         do {
-            unique = String.valueOf(System.currentTimeMillis()).substring(3) + String.format("%04d", (int)(Math.random() * 10000));
-            accountNo = prefix + unique;
+            // UUID-based: take first 14 hex chars, convert to uppercase decimal-like string
+            String uuidPart = UUID.randomUUID().toString().replace("-", "").substring(0, 14).toUpperCase();
+            accountNo = prefix + uuidPart;
+            attempts++;
+            if (attempts > 10) {
+                throw new IllegalStateException("Failed to generate a unique account number after " + attempts + " attempts.");
+            }
         } while (accountRepository.existsByAccountNo(accountNo));
         return accountNo;
     }
